@@ -138,8 +138,12 @@ BOOL CNoise::ChangeSpelling(CString strWord)
 		{
 			CString strResult = strWord;
 			CString strChar = *it;
-			strResult.Replace(strChar, m_strChange[GetCharcode(strChar)][i]);
-			m_setwords.insert(strResult);
+			CString strnew = m_strChange[GetCharcode(strChar)][i];
+			if (strnew.IsEmpty() == FALSE)
+			{
+				strResult.Replace(strChar, strnew);
+				m_setwords.insert(strResult);
+			}			
 		}
 	}
 
