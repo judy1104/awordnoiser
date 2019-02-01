@@ -122,10 +122,13 @@ BOOL CAwordnoiserDlg::OnInitDialog()
 	strPath = GetCurretDirectory();
 
 	m_strMyDirectory.Format(_T("%s\\Awordnoiser"), strPath);
-	if (CreateDirectory(m_strMyDirectory, NULL) == FALSE)
+	if (_taccess(m_strMyDirectory, 0) == ISNOTNORMAL)
 	{
-		return FALSE; 
-	}
+		if (CreateDirectory(m_strMyDirectory, NULL) == FALSE)
+		{
+			return FALSE;
+		}
+	}	
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -251,34 +254,35 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 		}
 
 		strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
-		if (CreateDirectory(strwordDir, NULL) == TRUE)
+		if (_taccess(strwordDir, 0) == ISNOTNORMAL)
 		{
-			if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+			if (CreateDirectory(strwordDir, NULL) == FALSE)
 			{
-				if (m_strWordlist.IsEmpty() == TRUE)
-				{
-					AfxMessageBox(_T("wordlist is empty"));
-				}
-				else
-				{					
-					m_progress.SetRange(0, m_strWordlist.GetCount());
-					m_progress.SetPos(0);
-					m_nTimer = SetTimer(1, 100, 0);
-					
-					m_bDoing = TRUE;
-					m_btnRun.SetWindowTextW(_T("중지"));
-				}
+				CString strMsg = _T("");
+				strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
+				AfxMessageBox(strMsg);
+			}
+		}
+			
+		if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+		{
+			if (m_strWordlist.IsEmpty() == TRUE)
+			{
+				AfxMessageBox(_T("wordlist is empty"));
 			}
 			else
 			{
-				AfxMessageBox(_T("RunWordnoiser failed"));
+				m_progress.SetRange(0, m_strWordlist.GetCount());
+				m_progress.SetPos(0);
+				m_nTimer = SetTimer(1, 100, 0);
+				
+				m_bDoing = TRUE;
+				m_btnRun.SetWindowTextW(_T("중지"));
 			}
 		}
 		else
 		{
-			CString strMsg = _T("");
-			strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
-			AfxMessageBox(strMsg);
+			AfxMessageBox(_T("RunWordnoiser failed"));
 		}
 	}
 	else
