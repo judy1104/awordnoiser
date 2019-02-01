@@ -7,7 +7,8 @@ using namespace std;
 #define NUM_CNT_SPELLING		26
 #define NUM_CNT_CHANGECHAR		10
 #define NUM_START_ADDCHAR		1
-#define NUM_START_ASCII			65
+#define NUM_START_ASCII_UPPER	65
+#define NUM_START_ASCII_LOWER	97
 
 class CNoise
 {

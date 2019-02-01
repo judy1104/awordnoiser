@@ -99,7 +99,7 @@ int CNoise::GetCharcode(CString strChar)
 	szChar = (LPTSTR)(LPCTSTR)strChar;
 	int iAscii = __toascii(*(szChar));
 
-	return (iAscii - NUM_START_ASCII);
+	return (iAscii - NUM_START_ASCII_UPPER) <= 25 ? (iAscii - NUM_START_ASCII_UPPER) : (iAscii - NUM_START_ASCII_LOWER);
 }
 
 BOOL CNoise::GetChangespelling(CStringList& strList)
