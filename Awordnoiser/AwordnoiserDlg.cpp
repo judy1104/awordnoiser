@@ -64,14 +64,16 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK3, m_ckop3);
 	DDX_Control(pDX, IDC_CHECK4, m_ckop4);
 	DDX_Control(pDX, IDC_CHECK5, m_ckop5);
+	DDX_Control(pDX, IDC_PROGRESS1, m_progress);
+	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CAwordnoiserDlg::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_BUTTON2, &CAwordnoiserDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON1, &CAwordnoiserDlg::OnBnClickedButton_Run)
+	ON_BN_CLICKED(IDC_BUTTON2, &CAwordnoiserDlg::OnBnClickedButton_Expectedwork)
 	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
@@ -224,46 +226,63 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
 	return bResult; 
 }
 
-void CAwordnoiserDlg::OnBnClickedButton1()
+void CAwordnoiserDlg::OnBnClickedButton_Run()
 {
-	CString		strWord = _T("");
-	CString		strwordDir = _T("");
-
-	m_editWord.GetWindowTextW(strWord);
-	if (strWord.IsEmpty() == TRUE)
+	if (m_bDoing == FALSE)
 	{
-		AfxMessageBox(_T("...?"));
-		return;
-	}
+		CString		strWord = _T("");
+		CString		strwordDir = _T("");
 
-	strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
-	if (CreateDirectory(strwordDir, NULL) == TRUE)
-	{
-		if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+		m_editWord.GetWindowTextW(strWord);
+		if (strWord.IsEmpty() == TRUE)
 		{
-			if (m_strWordlist.IsEmpty() == TRUE)
+			AfxMessageBox(_T("...?"));
+			return;
+		}
+
+		strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
+		if (CreateDirectory(strwordDir, NULL) == TRUE)
+		{
+			if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
 			{
-				AfxMessageBox(_T("wordlist is empty"));
+				if (m_strWordlist.IsEmpty() == TRUE)
+				{
+					AfxMessageBox(_T("wordlist is empty"));
+				}
+				else
+				{					
+					m_progress.SetRange(0, m_strWordlist.GetCount());
+					m_progress.SetPos(0);
+					m_nTimer = SetTimer(1, 100, 0);
+					
+					m_bDoing = TRUE;
+					m_btnRun.SetWindowTextW(_T("중지"));
+				}
 			}
 			else
 			{
-				m_nTimer = SetTimer(1, 100, 0);
+				AfxMessageBox(_T("RunWordnoiser failed"));
 			}
 		}
 		else
 		{
-			AfxMessageBox(_T("RunWordnoiser failed"));
+			CString strMsg = _T("");
+			strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
+			AfxMessageBox(strMsg);
 		}
 	}
 	else
 	{
-		CString strMsg = _T("");
-		strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
-		AfxMessageBox(strMsg);
+		m_bDoing = FALSE;
+		m_btnRun.SetWindowTextW(_T("만들기"));
+		if (m_nTimer)
+		{
+			KillTimer(m_nTimer);
+		}
 	}		
 }
 
-void CAwordnoiserDlg::OnBnClickedButton2()
+void CAwordnoiserDlg::OnBnClickedButton_Expectedwork()
 {
 	CString		strWord = _T("");
 	m_editWord.GetWindowTextW(strWord);
@@ -293,12 +312,15 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 		m_editWord.GetWindowTextW(strEdit);
 		if (strEdit.IsEmpty() == TRUE)
 		{
-			m_nfile = 0;
 			KillTimer(m_nTimer);
+			m_nfile = 0;			
+			m_progress.SetPos(m_strWordlist.GetCount());
+			AfxMessageBox(_T("끝"));
 		}
 		else
 		{
-			CaptureEditcontrol();
+			CaptureEditcontrol();		
+			m_progress.SetPos(m_nfile);
 		}		
 	}
 

@@ -4,6 +4,7 @@
 
 #pragma once
 #include "afxwin.h"
+#include "afxcmn.h"
 
 
 // CAwordnoiserDlg 대화 상자
@@ -24,6 +25,8 @@ public:
 private:
 	int		m_nfile = 0;
 	int		m_nTimer;
+
+	BOOL	m_bDoing = FALSE; 
 
 	CString m_strMyDirectory = _T("");
 	CString m_strMyWord = _T("");
@@ -47,13 +50,15 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	CEdit m_editWord;
+	CProgressCtrl m_progress;
 	CButton m_ckop1;
 	CButton m_ckop2;
 	CButton m_ckop3;
 	CButton m_ckop4;
 	CButton m_ckop5;
-	afx_msg void OnBnClickedButton1();
-	afx_msg void OnBnClickedButton2();
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	CButton m_btnRun;
 
+	afx_msg void OnBnClickedButton_Run();
+	afx_msg void OnBnClickedButton_Expectedwork();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);	
 };
