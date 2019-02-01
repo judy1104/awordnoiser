@@ -12,11 +12,8 @@ private:
 	BOOL ChangeSpelling(CStringList& strList);
 	BOOL AddSpecialChar(CStringList& strList);
 
-	BOOL GetSpecialChar1(CStringList& strList);
-	BOOL GetSpecialChar2(CStringList& strList1, CStringList& strList2);
-	BOOL GetSpecialChar3(CStringList& strList2, CStringList& strList3);
-	BOOL GetSpecialChar4(CStringList& strList3, CStringList& strList4);
-	BOOL GetSpecialChar5(CStringList& strList4, CStringList& strList5);
+	BOOL GetSpecialChar(CString strKey, CStringList& strList);
+	BOOL GetSpecialCharset(CStringList& strList1, CStringList& strList2);
 
 private:
 	CString		m_strWord = _T("");

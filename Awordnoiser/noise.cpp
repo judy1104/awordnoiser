@@ -53,10 +53,10 @@ BOOL CNoise::AddSpecialChar(CStringList& strList)
 	CStringList listchar3;
 	CStringList listchar4;
 
-	GetSpecialChar1(listchar1);
-	GetSpecialChar2(listchar1, listchar2);
-	GetSpecialChar3(listchar2, listchar3);
-	GetSpecialChar4(listchar3, listchar4);
+	GetSpecialChar(m_strWord, listchar1);
+	GetSpecialCharset(listchar1, listchar2);
+	GetSpecialCharset(listchar2, listchar3);
+	GetSpecialCharset(listchar3, listchar4);
 
 	if (m_bOption2 == TRUE)
 	{
@@ -81,42 +81,31 @@ BOOL CNoise::AddSpecialChar(CStringList& strList)
 	return bResult; 
 }
 
-BOOL CNoise::GetSpecialChar1(CStringList& strList)
+BOOL CNoise::GetSpecialChar(CString strKey, CStringList& strList)
 {
 	BOOL bResult = TRUE;
 
+	for (int i = 0; i< strKey.GetLength(); ++i)
+	{
+
+	}
 
 	return bResult;
 }
 
-BOOL CNoise::GetSpecialChar2(CStringList& strList1, CStringList& strList2)
+BOOL CNoise::GetSpecialCharset(CStringList& strList1, CStringList& strList2)
 {
 	BOOL bResult = TRUE;
 
+	POSITION posList1;
+	posList1 = strList1.GetHeadPosition();
 
-	return bResult;
-}
-
-BOOL CNoise::GetSpecialChar3(CStringList& strList2, CStringList& strList3)
-{
-	BOOL bResult = TRUE;
-
-
-	return bResult;
-}
-
-BOOL CNoise::GetSpecialChar4(CStringList& strList3, CStringList& strList4)
-{
-	BOOL bResult = TRUE;
-
-
-	return bResult;
-}
-
-BOOL CNoise::GetSpecialChar5(CStringList& strList4, CStringList& strList5)
-{
-	BOOL bResult = TRUE;
-
+	while (posList1 != strList1.GetHeadPosition())
+	{
+		CString	 strKey = _T("");
+		strKey = strList1.GetNext(posList1);
+		GetSpecialChar(strKey, strList2);
+	}
 
 	return bResult;
 }

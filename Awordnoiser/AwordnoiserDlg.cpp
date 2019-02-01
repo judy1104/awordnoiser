@@ -228,6 +228,11 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
 	CNoise Noiser(m_strMyWord, 1, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
 	Noiser.GetWordList(strWordlist);
 
+	if (strWordlist.IsEmpty() == FALSE)
+	{
+		bResult = TRUE;
+	}
+
 	return bResult; 
 }
 
