@@ -33,10 +33,13 @@ private:
 
 	CStringList	m_strWordlist; 
 
+	POSITION m_position; 
+
 private:
 	CString GetCurretDirectory();
-	void CaptureEditcontrol();
+	void CaptureEditcontrol(int nWidth = NUM_SIZE_WIDTH, int nHeight = NUM_SIZE_HEIGHT);
 	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist);
+	void SetEditcontrolText();
 
 // 구현입니다.
 protected:

@@ -13,6 +13,7 @@
 #define new DEBUG_NEW
 #endif
 
+#pragma warning (disable:4996)
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -195,26 +196,130 @@ CString CAwordnoiserDlg::GetCurretDirectory()
 	return strPath;
 }
 
-void CAwordnoiserDlg::CaptureEditcontrol()
+void CAwordnoiserDlg::CaptureEditcontrol(int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
 {
-	// 캡처해서 파일로 저장할거야
-
 	CWnd*  myWnd = this->GetDlgItem(IDC_EDIT1);
-	CDC memDC;
-	CBitmap bitmap;
+	CClientDC ScreenDC(myWnd);
+	HDC h_screen_dc = ScreenDC;
 
-	CClientDC dc(this);      // dc선언해주고 (this)에 화면을 출력하기 위해선언
-	CClientDC ScreenDC(myWnd);   // 스크린DC 선언
+	// DIB형식 정의
+	BITMAPINFO dib_define;
+	dib_define.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	dib_define.bmiHeader.biWidth = nWidth;
+	dib_define.bmiHeader.biHeight = nHeight;
+	dib_define.bmiHeader.biPlanes = 1;
+	dib_define.bmiHeader.biBitCount = 24;
+	dib_define.bmiHeader.biCompression = BI_RGB;
+	dib_define.bmiHeader.biSizeImage = (((nWidth * 24 + 31) & ~31) >> 3) * nHeight;
+	dib_define.bmiHeader.biXPelsPerMeter = 0;
+	dib_define.bmiHeader.biYPelsPerMeter = 0;
+	dib_define.bmiHeader.biClrImportant = 0;
+	dib_define.bmiHeader.biClrUsed = 0;
 
-	memDC.CreateCompatibleDC(&ScreenDC);   // 스크린DC와 호환되는 DC생성
-	bitmap.CreateCompatibleBitmap(&ScreenDC, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT);   // 스크린DC와 호환되는 비트맵 생성
-	CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);   // Bitmap 포인터를 넘겨줌
-	memDC.StretchBlt(0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, &ScreenDC, 0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, SRCCOPY);   // 스크린DC에 저장된화면을 memDC에 copy, bitmap에도 기록됨
-																														  // 출력
-	dc.BitBlt(0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, &memDC, 0, 0, SRCCOPY);   // 0,0 부터 해상도크기까지 memDC가 가리키는 참조값 0, 0부터 복사해서 출력함
+	// DIB의 내부 이미지 비트 패턴을 참조할 포인터 변수
+	BYTE *p_image_data = NULL;
 
-	memDC.SelectObject(pOldBitmap);
+	// dib_define에 정의된 내용으로 DIB생성
+	HBITMAP h_bitmap = ::CreateDIBSection(h_screen_dc, &dib_define, DIB_RGB_COLORS, (void **)&p_image_data, 0, 0);
 
+	// 캡쳐한 이미지 추출을 위한 가상 dc생성
+	HDC h_memory_dc = ::CreateCompatibleDC(h_screen_dc);
+
+	// 가상 DC에 이미지를 추출할 비트맵 연결
+	HBITMAP h_old_bitmap = (HBITMAP)::SelectObject(h_memory_dc, h_bitmap);
+
+	// 화면을 캡쳐
+	::BitBlt(h_memory_dc, 0, 0, nWidth, nHeight, h_screen_dc, 0, 0, SRCCOPY);
+
+	// 본래의 비트맵으로 복구
+	::SelectObject(h_memory_dc, h_old_bitmap);
+
+	// 가상 DC를 제거
+	DeleteDC(h_memory_dc);
+
+	// DIB 파일의 헤더 내용 구성
+	BITMAPFILEHEADER dib_format_layout;
+	ZeroMemory(&dib_format_layout, sizeof(BITMAPFILEHEADER));
+	dib_format_layout.bfType = *(WORD*)"BM";
+	dib_format_layout.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dib_define.bmiHeader.biSizeImage;
+	dib_format_layout.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+	// 이미지 파일 생성
+	CString strFilename = _T("");
+	strFilename.Format(_T("%s\\%s\\%s_%d.jpg"), m_strMyDirectory, m_strMyWord, m_strMyWord, m_nfile);
+	int length = strFilename.GetLength();
+	char* st = new char[length];
+	strcpy(st, (CT2A)strFilename);
+
+	FILE *p_file = fopen(st, "wb");
+	if (p_file != NULL) {
+		fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);
+		fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);
+		fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
+		fclose(p_file);
+		++m_nfile;
+	}
+
+	// 사용했던 비트맵과 DC 를 해제한다.
+	if (NULL != h_bitmap) DeleteObject(h_bitmap);
+	if (NULL != h_screen_dc) ::ReleaseDC(NULL, h_screen_dc);
+
+// 	CWnd*  myWnd = this->GetDlgItem(IDC_EDIT1);
+// 	CDC memDC;
+// 	CBitmap bitmap;
+// 
+// 	CClientDC dc(this);      // dc선언해주고 (this)에 화면을 출력하기 위해선언
+// 	CClientDC ScreenDC(myWnd);   // 스크린DC 선언
+// 
+// 	memDC.CreateCompatibleDC(&ScreenDC);   // 스크린DC와 호환되는 DC생성
+// 	bitmap.CreateCompatibleBitmap(&ScreenDC, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT);   // 스크린DC와 호환되는 비트맵 생성
+// 	CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);   // Bitmap 포인터를 넘겨줌
+// 	memDC.StretchBlt(0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, &ScreenDC, 0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, SRCCOPY);   // 스크린DC에 저장된화면을 memDC에 copy, bitmap에도 기록됨
+// 																														  // 출력
+// 	dc.BitBlt(0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, &memDC, 0, 0, SRCCOPY);   // 0,0 부터 해상도크기까지 memDC가 가리키는 참조값 0, 0부터 복사해서 출력함
+// 
+// 	memDC.SelectObject(pOldBitmap);
+// 	DeleteDC(memDC);
+// 
+// 
+// 	// DIB의 형식을 정의한다.
+// 	BITMAPINFO dib_define;
+// 	dib_define.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+// 	dib_define.bmiHeader.biWidth = NUM_SIZE_WIDTH;
+// 	dib_define.bmiHeader.biHeight = NUM_SIZE_HEIGHT;
+// 	dib_define.bmiHeader.biPlanes = 1;
+// 	dib_define.bmiHeader.biBitCount = 24;
+// 	dib_define.bmiHeader.biCompression = BI_RGB;
+// 	dib_define.bmiHeader.biSizeImage = (((NUM_SIZE_WIDTH * 24 + 31) & ~31) >> 3) * NUM_SIZE_HEIGHT;
+// 	dib_define.bmiHeader.biXPelsPerMeter = 0;
+// 	dib_define.bmiHeader.biYPelsPerMeter = 0;
+// 	dib_define.bmiHeader.biClrImportant = 0;
+// 	dib_define.bmiHeader.biClrUsed = 0;
+// 	
+// 	// DIB 파일의 헤더 내용을 구성한다.
+// 	BITMAPFILEHEADER dib_format_layout;
+// 	ZeroMemory(&dib_format_layout, sizeof(BITMAPFILEHEADER));
+// 	dib_format_layout.bfType = *(WORD*)"BM";
+// 	dib_format_layout.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dib_define.bmiHeader.biSizeImage;
+// 	dib_format_layout.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+// 
+// 	CString strFilename = _T("");
+// 	strFilename.Format(_T("%s\\%s\\%s_%d.jpg"), m_strMyDirectory, m_strMyWord, m_strMyWord, m_nfile);
+// 	int length = strFilename.GetLength();
+// 	char* st = new char[length];
+// 	//strcpy_s(st, length, (CT2A)strFilename);
+// 	strcpy(st, (CT2A)strFilename);
+// 
+// 	errno_t err = 0;
+// 	FILE *p_file =fopen(st, "wb");
+// 	//err = fopen_s(&p_file, st, "wb");
+// 	if ((err == 0)&&(p_file != NULL))
+// 	{			
+// 		fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);		
+// 		fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);		
+// 		fwrite(NULL, 1, dib_define.bmiHeader.biSizeImage, p_file);	
+// 		++m_nfile;
+// 	}
 }
 
 BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
@@ -228,15 +333,32 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
 
 	strWordlist.RemoveAll();
 
-	CNoise Noiser(m_strMyWord, 1, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
+	CNoise Noiser(strWord, 1, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
 	Noiser.GetWordList(strWordlist);
 
 	if (strWordlist.IsEmpty() == FALSE)
 	{
+		m_strMyWord = strWord; 
 		bResult = TRUE;
 	}
 
 	return bResult; 
+}
+
+void CAwordnoiserDlg::SetEditcontrolText()
+{
+	m_editWord.SetWindowText(_T(""));
+	m_editWord.SetWindowText(m_strWordlist.GetNext(m_position));
+
+	if (m_position == m_strWordlist.GetTailPosition())
+	{
+		KillTimer(m_nTimer);
+		m_nfile = 0;
+		m_progress.SetPos(m_strWordlist.GetCount());
+		m_btnRun.SetWindowTextW(_T("만들기"));
+		AfxMessageBox(_T("끝"));
+		m_progress.SetPos(0);
+	}
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
@@ -274,6 +396,8 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 			{
 				m_progress.SetRange(0, m_strWordlist.GetCount());
 				m_progress.SetPos(0);
+
+				m_position = m_strWordlist.GetHeadPosition();
 				m_nTimer = SetTimer(1, 100, 0);
 				
 				m_bDoing = TRUE;
@@ -322,20 +446,9 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == 1)
 	{
-		CString strEdit = _T("");
-		m_editWord.GetWindowTextW(strEdit);
-		if (strEdit.IsEmpty() == TRUE)
-		{
-			KillTimer(m_nTimer);
-			m_nfile = 0;			
-			m_progress.SetPos(m_strWordlist.GetCount());
-			AfxMessageBox(_T("끝"));
-		}
-		else
-		{
-			CaptureEditcontrol();		
-			m_progress.SetPos(m_nfile);
-		}		
+		m_progress.SetPos(m_nfile);
+		SetEditcontrolText();
+		CaptureEditcontrol();		
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
