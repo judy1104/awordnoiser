@@ -7,6 +7,8 @@
 #include "AwordnoiserDlg.h"
 #include "afxdialogex.h"
 
+#include "noise.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -222,6 +224,9 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
 	}
 
 	strWordlist.RemoveAll();
+
+	CNoise Noiser(m_strMyWord, 1, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
+	Noiser.GetWordList(strWordlist);
 
 	return bResult; 
 }

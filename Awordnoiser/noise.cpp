@@ -17,7 +17,7 @@ CNoise::~CNoise()
 
 }
 
-BOOL CNoise::GetWordList(CStringList strList)
+BOOL CNoise::GetWordList(CStringList& strList)
 {
 	BOOL bResult = TRUE; 
 
@@ -38,35 +38,85 @@ BOOL CNoise::GetWordList(CStringList strList)
 
 BOOL CNoise::ChangeSpelling(CStringList& strList)
 {
+	BOOL bResult = TRUE;
 
+
+	return bResult;
 }
 
 BOOL CNoise::AddSpecialChar(CStringList& strList)
 {
+	BOOL bResult = TRUE; 
 
+	CStringList listchar1;
+	CStringList listchar2;
+	CStringList listchar3;
+	CStringList listchar4;
+
+	GetSpecialChar1(listchar1);
+	GetSpecialChar2(listchar1, listchar2);
+	GetSpecialChar3(listchar2, listchar3);
+	GetSpecialChar4(listchar3, listchar4);
+
+	if (m_bOption2 == TRUE)
+	{
+		strList.AddTail(&listchar1);
+	}
+
+	if (m_bOption3 ==TRUE)
+	{
+		strList.AddTail(&listchar2);
+	}
+
+	if (m_bOption4 == TRUE)
+	{
+		strList.AddTail(&listchar3);
+	}
+
+	if (m_bOption5 == TRUE)
+	{
+		strList.AddTail(&listchar4);
+	}
+
+	return bResult; 
 }
 
 BOOL CNoise::GetSpecialChar1(CStringList& strList)
 {
+	BOOL bResult = TRUE;
 
+
+	return bResult;
 }
 
-BOOL CNoise::GetSpecialChar2(CStringList& strList)
+BOOL CNoise::GetSpecialChar2(CStringList& strList1, CStringList& strList2)
 {
+	BOOL bResult = TRUE;
 
+
+	return bResult;
 }
 
-BOOL CNoise::GetSpecialChar3(CStringList& strList)
+BOOL CNoise::GetSpecialChar3(CStringList& strList2, CStringList& strList3)
 {
+	BOOL bResult = TRUE;
 
+
+	return bResult;
 }
 
-BOOL CNoise::GetSpecialChar4(CStringList& strList)
+BOOL CNoise::GetSpecialChar4(CStringList& strList3, CStringList& strList4)
 {
+	BOOL bResult = TRUE;
 
+
+	return bResult;
 }
 
-BOOL CNoise::GetSpecialChar5(CStringList& strList)
+BOOL CNoise::GetSpecialChar5(CStringList& strList4, CStringList& strList5)
 {
+	BOOL bResult = TRUE;
 
+
+	return bResult;
 }
