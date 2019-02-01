@@ -33,6 +33,7 @@ private:
 private:
 	CString GetCurretDirectory();
 	void CaptureEditcontrol();
+	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist);
 
 // 구현입니다.
 protected:
@@ -45,9 +46,14 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	CEdit m_editWord;
+	CButton m_ckop1;
+	CButton m_ckop2;
+	CButton m_ckop3;
+	CButton m_ckop4;
+	CButton m_ckop5;
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
-	CEdit m_editWord;
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	CButton m_ckop1;
+
 };

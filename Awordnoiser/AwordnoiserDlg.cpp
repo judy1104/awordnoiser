@@ -60,6 +60,10 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT1, m_editWord);
 	DDX_Control(pDX, IDC_CHECK1, m_ckop1);
+	DDX_Control(pDX, IDC_CHECK2, m_ckop2);
+	DDX_Control(pDX, IDC_CHECK3, m_ckop3);
+	DDX_Control(pDX, IDC_CHECK4, m_ckop4);
+	DDX_Control(pDX, IDC_CHECK5, m_ckop5);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -104,6 +108,12 @@ BOOL CAwordnoiserDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+
+	m_ckop1.SetCheck(TRUE);
+	m_ckop3.SetCheck(TRUE);
+	m_ckop4.SetCheck(TRUE);
+	m_ckop5.SetCheck(TRUE);
+
 	CString strPath = _T("");
 	strPath = GetCurretDirectory();
 
@@ -200,6 +210,20 @@ void CAwordnoiserDlg::CaptureEditcontrol()
 
 }
 
+BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
+{
+	BOOL bResult = FALSE; 
+
+	if (strWord.IsEmpty() == TRUE)
+	{
+		return FALSE;
+	}
+
+	strWordlist.RemoveAll();
+
+	return bResult; 
+}
+
 void CAwordnoiserDlg::OnBnClickedButton1()
 {
 	CString		strWord = _T("");
@@ -213,38 +237,56 @@ void CAwordnoiserDlg::OnBnClickedButton1()
 	}
 
 	strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
-
 	if (CreateDirectory(strwordDir, NULL) == TRUE)
 	{
-		// 단어를  noise클래스에 던지고 리스트로 받기만 할거야.
-		// 옵션도 던져야 함
-
-		if (m_strWordlist.IsEmpty() == TRUE)
+		if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
 		{
-			AfxMessageBox(_T("wordlist is empty"));		
+			if (m_strWordlist.IsEmpty() == TRUE)
+			{
+				AfxMessageBox(_T("wordlist is empty"));
+			}
+			else
+			{
+				m_nTimer = SetTimer(1, 100, 0);
+			}
 		}
 		else
 		{
-			m_nTimer = SetTimer(1, 100, 0);
+			AfxMessageBox(_T("RunWordnoiser failed"));
 		}
 	}
 	else
-	{	
+	{
 		CString strMsg = _T("");
-		strMsg.Format(_T("CreateDirectory fail, strwordDir:%s"), strwordDir);
+		strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
 		AfxMessageBox(strMsg);
-	}	
+	}		
 }
 
 void CAwordnoiserDlg::OnBnClickedButton2()
 {
-	
+	CString		strWord = _T("");
+	m_editWord.GetWindowTextW(strWord);
+	if (strWord.IsEmpty() == TRUE)
+	{
+		AfxMessageBox(_T("...?"));
+		return;
+	}
+
+	if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+	{
+		CString strMsg = _T("");
+		strMsg.Format(_T("예상 단어 수:%d"), m_strWordlist.GetCount());
+		AfxMessageBox(strMsg);
+	}
+	else
+	{
+		AfxMessageBox(_T("RunWordnoiser failed"));
+	}
 }
 
 void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-
 	if (nIDEvent == 1)
 	{
 		CString strEdit = _T("");
