@@ -12,54 +12,54 @@ CNoise::CNoise(CString strWord, int nFilter /*= 0*/, BOOL bOption1 /*= TRUE*/, B
 	m_bOption5 = bOption5;
 
 	m_strlspecialChar.AddTail(_T("  "));
-	m_strlspecialChar.AddTail(_T("＃"));
-	m_strlspecialChar.AddTail(_T("＆"));
-	m_strlspecialChar.AddTail(_T("＊"));
-	m_strlspecialChar.AddTail(_T("＠"));
-	m_strlspecialChar.AddTail(_T("§"));
+// 	m_strlspecialChar.AddTail(_T("＃"));
+// 	m_strlspecialChar.AddTail(_T("＆"));
+// 	m_strlspecialChar.AddTail(_T("＊"));
+// 	m_strlspecialChar.AddTail(_T("＠"));
+// 	m_strlspecialChar.AddTail(_T("§"));
 	m_strlspecialChar.AddTail(_T("※"));
 	m_strlspecialChar.AddTail(_T("☆"));
-	m_strlspecialChar.AddTail(_T("★"));
-	m_strlspecialChar.AddTail(_T("○"));
-	m_strlspecialChar.AddTail(_T("●"));
-	m_strlspecialChar.AddTail(_T("◎"));
-	m_strlspecialChar.AddTail(_T("◇"));
-	m_strlspecialChar.AddTail(_T("◆"));
-	m_strlspecialChar.AddTail(_T("□"));
-	m_strlspecialChar.AddTail(_T("■"));
-	m_strlspecialChar.AddTail(_T("△"));
-	m_strlspecialChar.AddTail(_T("▲"));
-	m_strlspecialChar.AddTail(_T("▽"));
-	m_strlspecialChar.AddTail(_T("▼"));
-	m_strlspecialChar.AddTail(_T("◁"));
-	m_strlspecialChar.AddTail(_T("◀"));
-	m_strlspecialChar.AddTail(_T("▷"));
-	m_strlspecialChar.AddTail(_T("▶"));
-	m_strlspecialChar.AddTail(_T("♤"));
-	m_strlspecialChar.AddTail(_T("♠"));
-	m_strlspecialChar.AddTail(_T("♡"));
-	m_strlspecialChar.AddTail(_T("♥"));
-	m_strlspecialChar.AddTail(_T("♧"));
-	m_strlspecialChar.AddTail(_T("♣"));
-	m_strlspecialChar.AddTail(_T("⊙"));
-	m_strlspecialChar.AddTail(_T("◈"));
-	m_strlspecialChar.AddTail(_T("▣"));
-	m_strlspecialChar.AddTail(_T("◐"));
-	m_strlspecialChar.AddTail(_T("◑"));
-	m_strlspecialChar.AddTail(_T("▒"));
-	m_strlspecialChar.AddTail(_T("▤"));
-	m_strlspecialChar.AddTail(_T("▥"));
-	m_strlspecialChar.AddTail(_T("▨"));
-	m_strlspecialChar.AddTail(_T("▧"));
-	m_strlspecialChar.AddTail(_T("▦"));
-	m_strlspecialChar.AddTail(_T("▩"));
-	m_strlspecialChar.AddTail(_T("♨"));
-	m_strlspecialChar.AddTail(_T("☏"));
-	m_strlspecialChar.AddTail(_T("☎"));
-	m_strlspecialChar.AddTail(_T("♭"));
-	m_strlspecialChar.AddTail(_T("♩"));
-	m_strlspecialChar.AddTail(_T("♪"));
-	m_strlspecialChar.AddTail(_T("♬"));
+// 	m_strlspecialChar.AddTail(_T("★"));
+// 	m_strlspecialChar.AddTail(_T("○"));
+// 	m_strlspecialChar.AddTail(_T("●"));
+ 	m_strlspecialChar.AddTail(_T("◎"));
+// 	m_strlspecialChar.AddTail(_T("◇"));
+// 	m_strlspecialChar.AddTail(_T("◆"));
+// 	m_strlspecialChar.AddTail(_T("□"));
+ 	m_strlspecialChar.AddTail(_T("■"));
+// 	m_strlspecialChar.AddTail(_T("△"));
+// 	m_strlspecialChar.AddTail(_T("▲"));
+// 	m_strlspecialChar.AddTail(_T("▽"));
+// 	m_strlspecialChar.AddTail(_T("▼"));
+ 	m_strlspecialChar.AddTail(_T("◁"));
+// 	m_strlspecialChar.AddTail(_T("◀"));
+// 	m_strlspecialChar.AddTail(_T("▷"));
+// 	m_strlspecialChar.AddTail(_T("▶"));
+// 	m_strlspecialChar.AddTail(_T("♤"));
+ 	m_strlspecialChar.AddTail(_T("♠"));
+ 	m_strlspecialChar.AddTail(_T("♡"));
+ 	m_strlspecialChar.AddTail(_T("♥"));
+ 	m_strlspecialChar.AddTail(_T("♧"));
+ 	m_strlspecialChar.AddTail(_T("♣"));
+// 	m_strlspecialChar.AddTail(_T("⊙"));
+ 	m_strlspecialChar.AddTail(_T("◈"));
+// 	m_strlspecialChar.AddTail(_T("▣"));
+// 	m_strlspecialChar.AddTail(_T("◐"));
+// 	m_strlspecialChar.AddTail(_T("◑"));
+// 	m_strlspecialChar.AddTail(_T("▒"));
+// 	m_strlspecialChar.AddTail(_T("▤"));
+// 	m_strlspecialChar.AddTail(_T("▥"));
+// 	m_strlspecialChar.AddTail(_T("▨"));
+// 	m_strlspecialChar.AddTail(_T("▧"));
+// 	m_strlspecialChar.AddTail(_T("▦"));
+// 	m_strlspecialChar.AddTail(_T("▩"));
+// 	m_strlspecialChar.AddTail(_T("♨"));
+ 	m_strlspecialChar.AddTail(_T("☏"));
+// 	m_strlspecialChar.AddTail(_T("☎"));
+ 	m_strlspecialChar.AddTail(_T("♭"));
+// 	m_strlspecialChar.AddTail(_T("♩"));
+ 	m_strlspecialChar.AddTail(_T("♪"));
+// 	m_strlspecialChar.AddTail(_T("♬"));
 }
 
 CNoise::~CNoise()
@@ -93,13 +93,13 @@ int CNoise::GetCharcode(CString strChar)
 		return -1; 
 	}
 	
-	strChar.MakeUpper();
+	//strChar.MakeUpper();
 
 	TCHAR* szChar; 
 	szChar = (LPTSTR)(LPCTSTR)strChar;
 	int iAscii = __toascii(*(szChar));
 
-	return (iAscii - NUM_START_ASCII_UPPER) <= 25 ? (iAscii - NUM_START_ASCII_UPPER) : (iAscii - NUM_START_ASCII_LOWER);
+	return (iAscii - NUM_START_ASCII_UPPER) < NUM_CNT_SPELLING ? (iAscii - NUM_START_ASCII_UPPER) : (iAscii - NUM_START_ASCII_LOWER);
 }
 
 BOOL CNoise::GetChangespelling(CStringList& strList)
@@ -138,13 +138,45 @@ BOOL CNoise::ChangeSpelling(CString strWord)
 		{
 			CString strResult = strWord;
 			CString strChar = *it;
-			CString strnew = m_strChange[GetCharcode(strChar)][i];
-			if (strnew.IsEmpty() == FALSE)
+			int nPos = GetCharcode(strChar);
+			if (nPos > 0 && nPos < NUM_CNT_SPELLING)
 			{
-				strResult.Replace(strChar, strnew);
-				m_setwords.insert(strResult);
-			}			
+				CString strnew = m_strChange[nPos][i];
+				if (strnew.IsEmpty() == FALSE)
+				{
+					strResult.Replace(strChar, strnew);
+					m_setwords.insert(strResult);
+					++m_nIndex;
+					cout << "변환 작업중...#" << m_nIndex << endl;
+				}
+			}						
 		}
+	}
+
+	return bResult; 
+}
+
+BOOL CNoise::SetListFilter(CStringList& strOrgList, CStringList& strRetList, int nFilter/*=0*/)
+{
+	BOOL	bResult = FALSE; 
+	if ((strOrgList.IsEmpty() == TRUE) || (nFilter == 0))
+	{
+		return FALSE; 
+	}
+
+	int nFilterInddex = 0;
+	POSITION posList = strOrgList.GetHeadPosition();
+	while (posList != strOrgList.GetTailPosition())
+	{
+		if (nFilterInddex % nFilter == 0)
+		{
+			strRetList.AddTail(strOrgList.GetNext(posList));
+		}
+		else
+		{
+			strOrgList.GetNext(posList);
+		}
+		++nFilterInddex;
 	}
 
 	return bResult; 
@@ -153,16 +185,23 @@ BOOL CNoise::ChangeSpelling(CString strWord)
 BOOL CNoise::AddSpecialChar(CStringList& strList)
 {
 	BOOL bResult = TRUE; 
-
-	CStringList listchar1;
-	CStringList listchar2;
-	CStringList listchar3;
-	CStringList listchar4;
+	CStringList nextlist;
 
 	GetSpecialChar(m_strWord, listchar1);
-	GetSpecialCharset(listchar1, listchar2);
-	GetSpecialCharset(listchar2, listchar3);
-	GetSpecialCharset(listchar3, listchar4);
+	nextlist.RemoveAll(); 
+	SetListFilter(listchar1, nextlist, m_nfilter);
+	
+	GetSpecialCharset(nextlist, listchar2);
+	nextlist.RemoveAll();
+	SetListFilter(listchar2, nextlist, m_nfilter);
+
+	GetSpecialCharset(nextlist, listchar3);
+	nextlist.RemoveAll();
+	SetListFilter(listchar3, nextlist, m_nfilter);
+
+	GetSpecialCharset(nextlist, listchar4);
+	nextlist.RemoveAll();
+	SetListFilter(listchar4, nextlist, m_nfilter);
 
 	if (m_bOption2 == TRUE)
 	{
@@ -181,7 +220,7 @@ BOOL CNoise::AddSpecialChar(CStringList& strList)
 
 	if (m_bOption5 == TRUE)
 	{
-		strList.AddTail(&listchar4);
+		strList.AddTail(&nextlist);
 	}
 
 	return bResult; 
@@ -202,6 +241,8 @@ BOOL CNoise::GetSpecialChar(CString strKey, CStringList& strList)
 				CString strResult = strKey;
 				strResult.Insert(i, m_strlspecialChar.GetNext(posSpecialChar));
 				strList.AddTail(strResult);
+				++m_nIndex;
+				cout << "변환 작업중...#" << m_nIndex << endl;
 			}
 		}
 	}	
@@ -216,7 +257,7 @@ BOOL CNoise::GetSpecialCharset(CStringList& strList1, CStringList& strList2)
 	POSITION posList1;
 	posList1 = strList1.GetHeadPosition();
 
-	while (posList1 != strList1.GetHeadPosition())
+	while (posList1 != strList1.GetTailPosition())
 	{
 		CString	 strKey = _T("");
 		strKey = strList1.GetNext(posList1);

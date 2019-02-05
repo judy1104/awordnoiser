@@ -333,7 +333,7 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
 
 	strWordlist.RemoveAll();
 
-	CNoise Noiser(strWord, 1, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
+	CNoise Noiser(strWord, 10, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
 	Noiser.GetWordList(strWordlist);
 
 	if (strWordlist.IsEmpty() == FALSE)
@@ -356,6 +356,7 @@ void CAwordnoiserDlg::SetEditcontrolText()
 		m_nfile = 0;
 		m_progress.SetPos(m_strWordlist.GetCount());
 		m_btnRun.SetWindowTextW(_T("만들기"));
+		m_editWord.SetWindowTextW(m_strMyWord);
 		AfxMessageBox(_T("끝"));
 		m_progress.SetPos(0);
 	}
@@ -413,6 +414,7 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 	{
 		m_bDoing = FALSE;
 		m_btnRun.SetWindowTextW(_T("만들기"));
+		m_editWord.SetWindowTextW(m_strMyWord);
 		if (m_nTimer)
 		{
 			KillTimer(m_nTimer);
