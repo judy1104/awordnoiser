@@ -11,55 +11,55 @@ CNoise::CNoise(CString strWord, int nFilter /*= 0*/, BOOL bOption1 /*= TRUE*/, B
 	m_bOption4 = bOption4;
 	m_bOption5 = bOption5;
 
-	m_strlspecialChar.AddTail(_T("  "));
-// 	m_strlspecialChar.AddTail(_T("＃"));
-// 	m_strlspecialChar.AddTail(_T("＆"));
-// 	m_strlspecialChar.AddTail(_T("＊"));
-// 	m_strlspecialChar.AddTail(_T("＠"));
-// 	m_strlspecialChar.AddTail(_T("§"));
+	m_strlspecialChar.AddTail(_T(" "));
+	m_strlspecialChar.AddTail(_T("＃"));
+	m_strlspecialChar.AddTail(_T("＆"));
+	m_strlspecialChar.AddTail(_T("＊"));
+	m_strlspecialChar.AddTail(_T("＠"));
+	m_strlspecialChar.AddTail(_T("§"));
 	m_strlspecialChar.AddTail(_T("※"));
 	m_strlspecialChar.AddTail(_T("☆"));
-// 	m_strlspecialChar.AddTail(_T("★"));
-// 	m_strlspecialChar.AddTail(_T("○"));
-// 	m_strlspecialChar.AddTail(_T("●"));
+	m_strlspecialChar.AddTail(_T("★"));
+	m_strlspecialChar.AddTail(_T("○"));
+	m_strlspecialChar.AddTail(_T("●"));
  	m_strlspecialChar.AddTail(_T("◎"));
-// 	m_strlspecialChar.AddTail(_T("◇"));
-// 	m_strlspecialChar.AddTail(_T("◆"));
-// 	m_strlspecialChar.AddTail(_T("□"));
+	m_strlspecialChar.AddTail(_T("◇"));
+	m_strlspecialChar.AddTail(_T("◆"));
+	m_strlspecialChar.AddTail(_T("□"));
  	m_strlspecialChar.AddTail(_T("■"));
-// 	m_strlspecialChar.AddTail(_T("△"));
-// 	m_strlspecialChar.AddTail(_T("▲"));
-// 	m_strlspecialChar.AddTail(_T("▽"));
-// 	m_strlspecialChar.AddTail(_T("▼"));
+	m_strlspecialChar.AddTail(_T("△"));
+	m_strlspecialChar.AddTail(_T("▲"));
+	m_strlspecialChar.AddTail(_T("▽"));
+	m_strlspecialChar.AddTail(_T("▼"));
  	m_strlspecialChar.AddTail(_T("◁"));
-// 	m_strlspecialChar.AddTail(_T("◀"));
-// 	m_strlspecialChar.AddTail(_T("▷"));
-// 	m_strlspecialChar.AddTail(_T("▶"));
-// 	m_strlspecialChar.AddTail(_T("♤"));
+	m_strlspecialChar.AddTail(_T("◀"));
+	m_strlspecialChar.AddTail(_T("▷"));
+	m_strlspecialChar.AddTail(_T("▶"));
+	m_strlspecialChar.AddTail(_T("♤"));
  	m_strlspecialChar.AddTail(_T("♠"));
  	m_strlspecialChar.AddTail(_T("♡"));
  	m_strlspecialChar.AddTail(_T("♥"));
  	m_strlspecialChar.AddTail(_T("♧"));
  	m_strlspecialChar.AddTail(_T("♣"));
-// 	m_strlspecialChar.AddTail(_T("⊙"));
+ 	m_strlspecialChar.AddTail(_T("⊙"));
  	m_strlspecialChar.AddTail(_T("◈"));
-// 	m_strlspecialChar.AddTail(_T("▣"));
-// 	m_strlspecialChar.AddTail(_T("◐"));
-// 	m_strlspecialChar.AddTail(_T("◑"));
-// 	m_strlspecialChar.AddTail(_T("▒"));
-// 	m_strlspecialChar.AddTail(_T("▤"));
-// 	m_strlspecialChar.AddTail(_T("▥"));
-// 	m_strlspecialChar.AddTail(_T("▨"));
-// 	m_strlspecialChar.AddTail(_T("▧"));
-// 	m_strlspecialChar.AddTail(_T("▦"));
-// 	m_strlspecialChar.AddTail(_T("▩"));
-// 	m_strlspecialChar.AddTail(_T("♨"));
+	m_strlspecialChar.AddTail(_T("▣"));
+	m_strlspecialChar.AddTail(_T("◐"));
+	m_strlspecialChar.AddTail(_T("◑"));
+	m_strlspecialChar.AddTail(_T("▒"));
+	m_strlspecialChar.AddTail(_T("▤"));
+	m_strlspecialChar.AddTail(_T("▥"));
+	m_strlspecialChar.AddTail(_T("▨"));
+	m_strlspecialChar.AddTail(_T("▧"));
+	m_strlspecialChar.AddTail(_T("▦"));
+	m_strlspecialChar.AddTail(_T("▩"));
+	m_strlspecialChar.AddTail(_T("♨"));
  	m_strlspecialChar.AddTail(_T("☏"));
-// 	m_strlspecialChar.AddTail(_T("☎"));
+ 	m_strlspecialChar.AddTail(_T("☎"));
  	m_strlspecialChar.AddTail(_T("♭"));
-// 	m_strlspecialChar.AddTail(_T("♩"));
+ 	m_strlspecialChar.AddTail(_T("♩"));
  	m_strlspecialChar.AddTail(_T("♪"));
-// 	m_strlspecialChar.AddTail(_T("♬"));
+ 	m_strlspecialChar.AddTail(_T("♬"));
 }
 
 CNoise::~CNoise()
@@ -92,8 +92,6 @@ int CNoise::GetCharcode(CString strChar)
 	{
 		return -1; 
 	}
-	
-	//strChar.MakeUpper();
 
 	TCHAR* szChar; 
 	szChar = (LPTSTR)(LPCTSTR)strChar;
@@ -147,7 +145,7 @@ BOOL CNoise::ChangeSpelling(CString strWord)
 					strResult.Replace(strChar, strnew);
 					m_setwords.insert(strResult);
 					++m_nIndex;
-					cout << "변환 작업중...#" << m_nIndex << endl;
+					cout << "단어 생성중...#" << m_nIndex << endl;
 				}
 			}						
 		}
@@ -242,7 +240,7 @@ BOOL CNoise::GetSpecialChar(CString strKey, CStringList& strList)
 				strResult.Insert(i, m_strlspecialChar.GetNext(posSpecialChar));
 				strList.AddTail(strResult);
 				++m_nIndex;
-				cout << "변환 작업중...#" << m_nIndex << endl;
+				cout << "단어 생성중...#" << m_nIndex << endl;
 			}
 		}
 	}	

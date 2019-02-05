@@ -70,6 +70,8 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PROGRESS1, m_progress);
 	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
 	DDX_Control(pDX, IDC_EDIT_FILTER, m_editFilter);
+	DDX_Control(pDX, IDC_ST_COUNT, m_stCount);
+	DDX_Control(pDX, IDC_ST_INDEX, m_stIndex);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -348,21 +350,44 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, i
 	return bResult; 
 }
 
+void CAwordnoiserDlg::ClearContorl()
+{
+	m_nfile = 0;
+	m_progress.SetPos(m_strWordlist.GetCount());
+
+	AfxMessageBox(_T("끝"));
+	m_btnRun.SetWindowTextW(_T("만들기"));
+	m_editWord.SetWindowTextW(m_strMyWord);
+	m_progress.SetPos(0);
+	m_stIndex.SetWindowTextW(_T(""));
+	m_stCount.SetWindowTextW(_T(""));
+}
+
+void CAwordnoiserDlg::SetDlgControlIndex()
+{
+	m_progress.SetPos(m_nfile);
+
+	CString strMsg = _T("");
+	strMsg.Format(_T("%d/"), m_nfile);
+	m_stIndex.SetWindowTextW(strMsg);
+
+}
+
 void CAwordnoiserDlg::SetEditcontrolText()
 {
 	m_editWord.SetWindowText(_T(""));
 	m_editWord.SetWindowText(m_strWordlist.GetNext(m_position));
 
-	if (m_position == m_strWordlist.GetTailPosition())
-	{
-		KillTimer(m_nTimer);
-		m_nfile = 0;
-		m_progress.SetPos(m_strWordlist.GetCount());
-		m_btnRun.SetWindowTextW(_T("만들기"));
-		m_editWord.SetWindowTextW(m_strMyWord);
-		AfxMessageBox(_T("끝"));
-		m_progress.SetPos(0);
-	}
+// 	if (m_position == m_strWordlist.GetTailPosition())
+// 	{
+// 		KillTimer(m_nTimer);
+// 		m_nfile = 0;
+// 		m_progress.SetPos(m_strWordlist.GetCount());
+// 		m_btnRun.SetWindowTextW(_T("만들기"));
+// 		m_editWord.SetWindowTextW(m_strMyWord);
+// 		AfxMessageBox(_T("끝"));
+// 		m_progress.SetPos(0);
+// 	}
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
@@ -407,6 +432,10 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 				m_position = m_strWordlist.GetHeadPosition();
 				m_nTimer = SetTimer(1, 100, 0);
 				
+				CString strMsg = _T("");
+				strMsg.Format(_T("%d"), m_strWordlist.GetCount()-1);
+				m_stCount.SetWindowTextW(strMsg);
+
 				m_bDoing = TRUE;
 				m_btnRun.SetWindowTextW(_T("중지"));
 			}
@@ -453,10 +482,16 @@ void CAwordnoiserDlg::OnBnClickedButton_Expectedwork()
 void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == 1)
-	{
-		m_progress.SetPos(m_nfile);
+	{		
 		SetEditcontrolText();
-		CaptureEditcontrol();		
+		CaptureEditcontrol();	
+		SetDlgControlIndex();
+
+		if (m_position == m_strWordlist.GetTailPosition())
+		{
+			KillTimer(m_nTimer);
+			ClearContorl();
+		}
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
