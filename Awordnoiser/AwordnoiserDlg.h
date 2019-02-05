@@ -38,7 +38,7 @@ private:
 private:
 	CString GetCurretDirectory();
 	void CaptureEditcontrol(int nWidth = NUM_SIZE_WIDTH, int nHeight = NUM_SIZE_HEIGHT);
-	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist);
+	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist, int nFilter=10);
 	void SetEditcontrolText();
 
 // 구현입니다.
@@ -64,4 +64,5 @@ public:
 	afx_msg void OnBnClickedButton_Run();
 	afx_msg void OnBnClickedButton_Expectedwork();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);	
+	CEdit m_editFilter;
 };

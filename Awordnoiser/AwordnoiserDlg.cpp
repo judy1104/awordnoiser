@@ -69,6 +69,7 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK5, m_ckop5);
 	DDX_Control(pDX, IDC_PROGRESS1, m_progress);
 	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
+	DDX_Control(pDX, IDC_EDIT_FILTER, m_editFilter);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -118,6 +119,8 @@ BOOL CAwordnoiserDlg::OnInitDialog()
 	m_ckop3.SetCheck(TRUE);
 	m_ckop4.SetCheck(TRUE);
 	m_ckop5.SetCheck(TRUE);
+
+	m_editFilter.SetWindowTextW(_T("10"));
 
 	CString strPath = _T("");
 	strPath = GetCurretDirectory();
@@ -322,7 +325,7 @@ void CAwordnoiserDlg::CaptureEditcontrol(int nWidth /*= NUM_SIZE_WIDTH*/, int nH
 // 	}
 }
 
-BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
+BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, int nFilter /*= 10*/)
 {
 	BOOL bResult = FALSE; 
 
@@ -333,7 +336,7 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist)
 
 	strWordlist.RemoveAll();
 
-	CNoise Noiser(strWord, 10, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
+	CNoise Noiser(strWord, nFilter, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
 	Noiser.GetWordList(strWordlist);
 
 	if (strWordlist.IsEmpty() == FALSE)
@@ -386,8 +389,11 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 				AfxMessageBox(strMsg);
 			}
 		}
+
+		CString strFilter = _T("");
+		m_editFilter.GetWindowTextW(strFilter);
 			
-		if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+		if (RunWordnoiser(strWord, m_strWordlist, _ttoi(strFilter)) == TRUE)
 		{
 			if (m_strWordlist.IsEmpty() == TRUE)
 			{
