@@ -204,7 +204,7 @@ CString CAwordnoiserDlg::GetCurretDirectory()
 	return strPath;
 }
 
-void CAwordnoiserDlg::CaptureEditcontrol(int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
+void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
 {
 	CWnd*  myWnd = this->GetDlgItem(IDC_EDIT1);
 	CClientDC ScreenDC(myWnd);
@@ -254,7 +254,7 @@ void CAwordnoiserDlg::CaptureEditcontrol(int nWidth /*= NUM_SIZE_WIDTH*/, int nH
 
 	// 이미지 파일 생성
 	CString strFilename = _T("");
-	strFilename.Format(_T("%s\\%s\\%s_%d.jpg"), m_strMyDirectory, m_strMyWord, m_strMyWord, m_nfile);
+	strFilename.Format(_T("%s\\%s\\%s_%d.jpg"), strPath, strFolder, strFolder, m_nfile);
 	int length = strFilename.GetLength();
 	char* st = new char[length];
 	strcpy(st, (CT2A)strFilename);
@@ -330,6 +330,64 @@ void CAwordnoiserDlg::CaptureEditcontrol(int nWidth /*= NUM_SIZE_WIDTH*/, int nH
 // 	}
 }
 
+CString CAwordnoiserDlg::GetWord(CString strMsg)
+{
+	CString strResult = _T("");
+	int nPos = strMsg.Find(_T("-"), 0);
+	strResult = strMsg.Mid(0, nPos);
+
+	return strResult;
+}
+
+BOOL CAwordnoiserDlg::ReadWordsetfile(CStringList& strlWordset, CString strPath)
+{
+	BOOL bResult = FALSE; 
+
+	if (_taccess(strPath, 0) == -1)
+	{
+		return FALSE; 
+	}
+
+	strlWordset.RemoveAll();
+
+	CStdioFile file;
+	CFileException exception;
+	CString line;
+
+	if (!file.Open(strPath, CFile::modeRead | CFile::shareDenyNone))
+	{
+		return FALSE;
+	}
+	else
+	{
+		try
+		{
+			while (true)
+			{
+				if (!file.ReadString(line))
+				{
+					break;
+				}
+				else
+				{
+					bResult = TRUE; 
+					strlWordset.AddTail(GetWord(line));
+				}
+			}
+		}
+		catch (CFileException *e)
+		{
+			CString strMsg = _T("");
+			strMsg.Format(_T("get last error code : %d"), GetLastError());
+			AfxMessageBox(strMsg);
+		}
+	}
+
+	file.Close();
+
+	return bResult; 
+}
+
 BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, int nFilter /*= 10*/)
 {
 	BOOL bResult = FALSE; 
@@ -376,35 +434,58 @@ void CAwordnoiserDlg::SetDlgControlIndex()
 
 }
 
-void CAwordnoiserDlg::SetEditcontrolText()
+void CAwordnoiserDlg::SetEditcontrolText(CString strText)
 {
 	m_editWord.SetWindowText(_T(""));
-	m_editWord.SetWindowText(m_strWordlist.GetNext(m_position));
+	m_editWord.SetWindowText(strText);
+}
 
-// 	if (m_position == m_strWordlist.GetTailPosition())
-// 	{
-// 		KillTimer(m_nTimer);
-// 		m_nfile = 0;
-// 		m_progress.SetPos(m_strWordlist.GetCount());
-// 		m_btnRun.SetWindowTextW(_T("만들기"));
-// 		m_editWord.SetWindowTextW(m_strMyWord);
-// 		AfxMessageBox(_T("끝"));
-// 		m_progress.SetPos(0);
-// 	}
+void CAwordnoiserDlg::CheckDirectory(CString strPath, CString strFolder)
+{
+	CString		strwordDir = _T("");
+
+	strwordDir.Format(_T("%s\\%s"), strPath, strFolder);
+	if (_taccess(strwordDir, 0) == ISNOTNORMAL)
+	{
+		if (CreateDirectory(strwordDir, NULL) == FALSE)
+		{
+			CString strMsg = _T("");
+			strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
+			AfxMessageBox(strMsg);
+		}
+	}
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
 {
 	if (m_ckWordset.GetCheck() == TRUE)
 	{
-
+		CString strPath = _T("");
+		m_stWordsetPath.GetWindowTextW(strPath);
+		
+		if (ReadWordsetfile(m_strBowlist, strPath) == TRUE)
+		{
+			if (m_strBowlist.IsEmpty() == FALSE)
+			{
+				m_posBowset = m_strBowlist.GetHeadPosition();
+				if (m_nTimerBow == NULL)
+				{
+					CheckDirectory(m_strMyDirectory, STR_WORDSET_FOLDER);
+					m_nTimerBow = SetTimer(2, 100, NULL);
+				}
+			}						
+		}
+		else
+		{
+			AfxMessageBox(_T("ReadWordsetfile failed"));
+		}
 	}
 	else
 	{
 		if (m_bDoing == FALSE)
 		{
 			CString		strWord = _T("");
-			CString		strwordDir = _T("");
+			//CString		strwordDir = _T("");
 
 			m_editWord.GetWindowTextW(strWord);
 			if (strWord.IsEmpty() == TRUE)
@@ -413,16 +494,17 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 				return;
 			}
 
-			strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
-			if (_taccess(strwordDir, 0) == ISNOTNORMAL)
-			{
-				if (CreateDirectory(strwordDir, NULL) == FALSE)
-				{
-					CString strMsg = _T("");
-					strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
-					AfxMessageBox(strMsg);
-				}
-			}
+			CheckDirectory(m_strMyDirectory, strWord);
+// 			strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
+// 			if (_taccess(strwordDir, 0) == ISNOTNORMAL)
+// 			{
+// 				if (CreateDirectory(strwordDir, NULL) == FALSE)
+// 				{
+// 					CString strMsg = _T("");
+// 					strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
+// 					AfxMessageBox(strMsg);
+// 				}
+// 			}
 
 			CString strFilter = _T("");
 			m_editFilter.GetWindowTextW(strFilter);
@@ -438,8 +520,8 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 					m_progress.SetRange(0, m_strWordlist.GetCount());
 					m_progress.SetPos(0);
 
-					m_position = m_strWordlist.GetHeadPosition();
-					m_nTimer = SetTimer(1, 100, 0);
+					m_posWord = m_strWordlist.GetHeadPosition();
+					m_nTimerWord = SetTimer(1, 100, 0);
 
 					CString strMsg = _T("");
 					strMsg.Format(_T("%d"), m_strWordlist.GetCount() - 1);
@@ -459,9 +541,9 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 			m_bDoing = FALSE;
 			m_btnRun.SetWindowTextW(_T("만들기"));
 			m_editWord.SetWindowTextW(m_strMyWord);
-			if (m_nTimer)
+			if (m_nTimerWord)
 			{
-				KillTimer(m_nTimer);
+				KillTimer(m_nTimerWord);
 			}
 		}
 	}			
@@ -493,13 +575,26 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == 1)
 	{		
-		SetEditcontrolText();
-		CaptureEditcontrol();	
+		SetEditcontrolText(m_strWordlist.GetNext(m_posWord));
+		CaptureEditcontrol(m_strMyDirectory, m_strMyWord);	
 		SetDlgControlIndex();
 
-		if (m_position == m_strWordlist.GetTailPosition())
+		if ((m_strWordlist.IsEmpty() == TRUE)||(m_posWord == m_strWordlist.GetTailPosition()))
 		{
-			KillTimer(m_nTimer);
+			KillTimer(m_nTimerWord);
+			m_nTimerWord = NULL;
+			ClearContorl();
+		}
+	}
+	else if (nIDEvent == 2)
+	{
+		SetEditcontrolText(m_strBowlist.GetNext(m_posBowset));
+		CaptureEditcontrol(m_strMyDirectory, STR_WORDSET_FOLDER);
+
+		if ((m_strBowlist.IsEmpty() == TRUE) || (m_posBowset == m_strBowlist.GetTailPosition()))
+		{
+			KillTimer(m_nTimerBow);
+			m_nTimerBow = NULL;
 			ClearContorl();
 		}
 	}
@@ -526,7 +621,7 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		::DragQueryFile(hDropInfo, 0, szPathname, MAX_PATH);
 		TCHAR* szFilename = _tcsrchr(szPathname, _T('\\')) + 1;
 		strFilename = szFilename;
-		if (strFilename.CompareNoCase(_T("wordset.csv")) == 0)
+		if (strFilename.CompareNoCase(STR_WORDSET_FILENAME) == 0)
 		{
 			m_stWordsetPath.SetWindowTextW(szPathname);
 		}

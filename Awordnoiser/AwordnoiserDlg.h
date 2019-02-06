@@ -24,7 +24,8 @@ public:
 
 private:
 	int		m_nfile = 0;
-	int		m_nTimer;
+	int		m_nTimerWord;
+	int		m_nTimerBow;
 
 	BOOL	m_bDoing = FALSE; 
 
@@ -32,16 +33,21 @@ private:
 	CString m_strMyWord = _T("");
 
 	CStringList	m_strWordlist; 
+	CStringList m_strBowlist; 
 
-	POSITION m_position; 
+	POSITION m_posWord; 
+	POSITION m_posBowset;
 
 private:
 	CString GetCurretDirectory();
-	void CaptureEditcontrol(int nWidth = NUM_SIZE_WIDTH, int nHeight = NUM_SIZE_HEIGHT);
+	void CaptureEditcontrol(CString strPath, CString strFolder, int nWidth = NUM_SIZE_WIDTH, int nHeight = NUM_SIZE_HEIGHT);
+	CString GetWord(CString strMsg);
+	BOOL ReadWordsetfile(CStringList& strlBOWA, CString strPath);
 	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist, int nFilter=10);
 	void ClearContorl();
 	void SetDlgControlIndex();
-	void SetEditcontrolText();
+	void SetEditcontrolText(CString strText);
+	void CheckDirectory(CString strPath, CString strFolder);
 
 // 구현입니다.
 protected:
