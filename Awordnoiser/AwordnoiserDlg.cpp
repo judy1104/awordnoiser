@@ -67,11 +67,13 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK3, m_ckop3);
 	DDX_Control(pDX, IDC_CHECK4, m_ckop4);
 	DDX_Control(pDX, IDC_CHECK5, m_ckop5);
+	DDX_Control(pDX, IDC_CHECK6, m_ckWordset);
 	DDX_Control(pDX, IDC_PROGRESS1, m_progress);
 	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
 	DDX_Control(pDX, IDC_EDIT_FILTER, m_editFilter);
 	DDX_Control(pDX, IDC_ST_COUNT, m_stCount);
 	DDX_Control(pDX, IDC_ST_INDEX, m_stIndex);
+	DDX_Control(pDX, IDC_ST_WORDSET_PATH, m_stWordsetPath);	
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -81,6 +83,7 @@ BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CAwordnoiserDlg::OnBnClickedButton_Run)
 	ON_BN_CLICKED(IDC_BUTTON2, &CAwordnoiserDlg::OnBnClickedButton_Expectedwork)
 	ON_WM_TIMER()
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 
@@ -392,69 +395,76 @@ void CAwordnoiserDlg::SetEditcontrolText()
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
 {
-	if (m_bDoing == FALSE)
+	if (m_ckWordset.GetCheck() == TRUE)
 	{
-		CString		strWord = _T("");
-		CString		strwordDir = _T("");
 
-		m_editWord.GetWindowTextW(strWord);
-		if (strWord.IsEmpty() == TRUE)
+	}
+	else
+	{
+		if (m_bDoing == FALSE)
 		{
-			AfxMessageBox(_T("...?"));
-			return;
-		}
+			CString		strWord = _T("");
+			CString		strwordDir = _T("");
 
-		strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
-		if (_taccess(strwordDir, 0) == ISNOTNORMAL)
-		{
-			if (CreateDirectory(strwordDir, NULL) == FALSE)
+			m_editWord.GetWindowTextW(strWord);
+			if (strWord.IsEmpty() == TRUE)
 			{
-				CString strMsg = _T("");
-				strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
-				AfxMessageBox(strMsg);
+				AfxMessageBox(_T("...?"));
+				return;
 			}
-		}
 
-		CString strFilter = _T("");
-		m_editFilter.GetWindowTextW(strFilter);
-			
-		if (RunWordnoiser(strWord, m_strWordlist, _ttoi(strFilter)) == TRUE)
-		{
-			if (m_strWordlist.IsEmpty() == TRUE)
+			strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
+			if (_taccess(strwordDir, 0) == ISNOTNORMAL)
 			{
-				AfxMessageBox(_T("wordlist is empty"));
+				if (CreateDirectory(strwordDir, NULL) == FALSE)
+				{
+					CString strMsg = _T("");
+					strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
+					AfxMessageBox(strMsg);
+				}
+			}
+
+			CString strFilter = _T("");
+			m_editFilter.GetWindowTextW(strFilter);
+
+			if (RunWordnoiser(strWord, m_strWordlist, _ttoi(strFilter)) == TRUE)
+			{
+				if (m_strWordlist.IsEmpty() == TRUE)
+				{
+					AfxMessageBox(_T("wordlist is empty"));
+				}
+				else
+				{
+					m_progress.SetRange(0, m_strWordlist.GetCount());
+					m_progress.SetPos(0);
+
+					m_position = m_strWordlist.GetHeadPosition();
+					m_nTimer = SetTimer(1, 100, 0);
+
+					CString strMsg = _T("");
+					strMsg.Format(_T("%d"), m_strWordlist.GetCount() - 1);
+					m_stCount.SetWindowTextW(strMsg);
+
+					m_bDoing = TRUE;
+					m_btnRun.SetWindowTextW(_T("중지"));
+				}
 			}
 			else
 			{
-				m_progress.SetRange(0, m_strWordlist.GetCount());
-				m_progress.SetPos(0);
-
-				m_position = m_strWordlist.GetHeadPosition();
-				m_nTimer = SetTimer(1, 100, 0);
-				
-				CString strMsg = _T("");
-				strMsg.Format(_T("%d"), m_strWordlist.GetCount()-1);
-				m_stCount.SetWindowTextW(strMsg);
-
-				m_bDoing = TRUE;
-				m_btnRun.SetWindowTextW(_T("중지"));
+				AfxMessageBox(_T("RunWordnoiser failed"));
 			}
 		}
 		else
 		{
-			AfxMessageBox(_T("RunWordnoiser failed"));
+			m_bDoing = FALSE;
+			m_btnRun.SetWindowTextW(_T("만들기"));
+			m_editWord.SetWindowTextW(m_strMyWord);
+			if (m_nTimer)
+			{
+				KillTimer(m_nTimer);
+			}
 		}
-	}
-	else
-	{
-		m_bDoing = FALSE;
-		m_btnRun.SetWindowTextW(_T("만들기"));
-		m_editWord.SetWindowTextW(m_strMyWord);
-		if (m_nTimer)
-		{
-			KillTimer(m_nTimer);
-		}
-	}		
+	}			
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Expectedwork()
@@ -495,4 +505,38 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
+{
+	// TODO: Add your message handler code here and/or call default
+	int nFile = 0; 
+	TCHAR szPathname[MAX_PATH] = { 0, };
+	CString strFilename = _T("");
+
+	nFile = ::DragQueryFile(hDropInfo, 0xFFFFFFFF, szPathname, MAX_PATH);
+
+	if (nFile > 1)
+	{
+		AfxMessageBox(_T("파일 개수 초과"));
+	}
+	else
+	{
+		::DragQueryFile(hDropInfo, 0, szPathname, MAX_PATH);
+		TCHAR* szFilename = _tcsrchr(szPathname, _T('\\')) + 1;
+		strFilename = szFilename;
+		if (strFilename.CompareNoCase(_T("wordset.csv")) == 0)
+		{
+			m_stWordsetPath.SetWindowTextW(szPathname);
+		}
+		else
+		{
+			AfxMessageBox(_T("형식 오류"));
+		}
+	}
+
+	::DragFinish(hDropInfo);
+
+	CDialogEx::OnDropFiles(hDropInfo);
 }
