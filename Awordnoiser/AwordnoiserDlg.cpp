@@ -125,7 +125,7 @@ BOOL CAwordnoiserDlg::OnInitDialog()
 	m_ckop4.SetCheck(TRUE);
 	m_ckop5.SetCheck(TRUE);
 
-	m_editFilter.SetWindowTextW(_T("10"));
+	m_editFilter.SetWindowTextW(_T("20"));
 
 	CString strPath = _T("");
 	strPath = GetCurretDirectory();
@@ -624,6 +624,7 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		if (strFilename.CompareNoCase(STR_WORDSET_FILENAME) == 0)
 		{
 			m_stWordsetPath.SetWindowTextW(szPathname);
+			m_ckWordset.ShowWindow(TRUE);
 		}
 		else
 		{
