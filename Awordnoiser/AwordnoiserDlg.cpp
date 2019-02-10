@@ -254,7 +254,20 @@ void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int
 
 	// 이미지 파일 생성
 	CString strFilename = _T("");
-	strFilename.Format(_T("%s\\%s\\%s_%d.jpg"), strPath, strFolder, strFolder, m_nfile);
+
+	if (m_nfile % 5 == 3)
+	{
+		strFilename.Format(_T("%s\\%s_%d.jpg"), m_strTestPath, strFolder, m_nfile);
+	}
+	else if (m_nfile % 5 == 4)
+	{
+		strFilename.Format(_T("%s\\%s_%d.jpg"), m_strValidationPath, strFolder, m_nfile);
+	}
+	else
+	{
+		strFilename.Format(_T("%s\\%s_%d.jpg"), m_strTrainPath, strFolder, m_nfile);
+	}
+	
 	int length = strFilename.GetLength();
 	char* st = new char[length];
 	strcpy(st, (CT2A)strFilename);
@@ -447,11 +460,73 @@ void CAwordnoiserDlg::CheckDirectory(CString strPath, CString strFolder)
 	strwordDir.Format(_T("%s\\%s"), strPath, strFolder);
 	if (_taccess(strwordDir, 0) == ISNOTNORMAL)
 	{
+		CString strMsg = _T("");
+
 		if (CreateDirectory(strwordDir, NULL) == FALSE)
 		{
-			CString strMsg = _T("");
 			strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
 			AfxMessageBox(strMsg);
+		}
+		else
+		{
+			CString strTrain = _T("");
+			CString strTest = _T("");
+			CString strValidation = _T("");
+
+			strTrain.Format(_T("%s\\train"), strwordDir);
+			strTest.Format(_T("%s\\test"), strwordDir);
+			strValidation.Format(_T("%s\\validation"), strwordDir);
+
+			if (_taccess(strTrain, 0) == -1)
+			{
+				if (CreateDirectory(strTrain, NULL) == FALSE)
+				{
+					strMsg.Format(_T("CreateDirectory(strTrain) fail, wordDir:%s"), strTrain);
+					AfxMessageBox(strMsg);
+				}
+				else
+				{
+					m_strTrainPath = strTrain;
+				}
+			}
+			else
+			{
+				m_strTrainPath = strTrain;
+			}
+			
+			if (_taccess(strTest, 0) == -1)
+			{
+				if (CreateDirectory(strTest, NULL) == FALSE)
+				{
+					strMsg.Format(_T("CreateDirectory(strTest) fail, wordDir:%s"), strTest);
+					AfxMessageBox(strMsg);
+				}
+				else
+				{
+					m_strTestPath = strTest;
+				}
+			}
+			else
+			{
+				m_strTestPath = strTest;
+			}
+
+			if (_taccess(strValidation, 0) == -1)
+			{
+				if (CreateDirectory(strValidation, NULL) == FALSE)
+				{
+					strMsg.Format(_T("CreateDirectory(strValidation) fail, wordDir:%s"), strValidation);
+					AfxMessageBox(strMsg);
+				}
+				else
+				{
+					m_strValidationPath = strValidation;
+				}
+			}
+			else
+			{
+				m_strValidationPath = strValidation;
+			}			
 		}
 	}
 }

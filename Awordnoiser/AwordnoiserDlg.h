@@ -32,6 +32,10 @@ private:
 	CString m_strMyDirectory = _T("");
 	CString m_strMyWord = _T("");
 
+	CString m_strTrainPath = _T("");
+	CString m_strTestPath = _T("");
+	CString m_strValidationPath = _T("");
+
 	CStringList	m_strWordlist; 
 	CStringList m_strBowlist; 
 
