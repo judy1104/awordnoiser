@@ -110,10 +110,24 @@ BOOL CNoise::GetChangespelling(CStringList& strList)
 
 	ChangeSpelling(m_strWord);
 
-	// บนป็
+	int		nFilter = 0; 
+	for (set<CString>::iterator it = m_setwords.begin(); it != m_setwords.end(); ++it)
+	{		
+		++nFilter;
+		if (nFilter % 5 == 0)
+		{
+			ChangeSpelling(*it);
+		}
+	}
+
+	nFilter = 0;
 	for (set<CString>::iterator it = m_setwords.begin(); it != m_setwords.end(); ++it)
 	{
-		strList.AddTail(*it);
+		++nFilter;
+		if (nFilter % 5 == 0)
+		{
+			strList.AddTail(*it);
+		}		
 	}
 
 	return bResult;
