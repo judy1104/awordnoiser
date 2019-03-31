@@ -466,68 +466,70 @@ void CAwordnoiserDlg::CheckDirectory(CString strPath, CString strFolder)
 		{
 			strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
 			AfxMessageBox(strMsg);
+			return;
+		}
+	}
+
+	CString strTrain = _T("");
+	CString strTest = _T("");
+	CString strValidation = _T("");
+
+	strTrain.Format(_T("%s\\train"), strwordDir);
+	strTest.Format(_T("%s\\test"), strwordDir);
+	strValidation.Format(_T("%s\\validation"), strwordDir);
+
+	if (_taccess(strTrain, 0) == -1)
+	{
+		if (CreateDirectory(strTrain, NULL) == FALSE)
+		{
+			CString strMsg = _T("");
+			strMsg.Format(_T("CreateDirectory(strTrain) fail, wordDir:%s"), strTrain);
+			AfxMessageBox(strMsg);
 		}
 		else
 		{
-			CString strTrain = _T("");
-			CString strTest = _T("");
-			CString strValidation = _T("");
-
-			strTrain.Format(_T("%s\\train"), strwordDir);
-			strTest.Format(_T("%s\\test"), strwordDir);
-			strValidation.Format(_T("%s\\validation"), strwordDir);
-
-			if (_taccess(strTrain, 0) == -1)
-			{
-				if (CreateDirectory(strTrain, NULL) == FALSE)
-				{
-					strMsg.Format(_T("CreateDirectory(strTrain) fail, wordDir:%s"), strTrain);
-					AfxMessageBox(strMsg);
-				}
-				else
-				{
-					m_strTrainPath = strTrain;
-				}
-			}
-			else
-			{
-				m_strTrainPath = strTrain;
-			}
-			
-			if (_taccess(strTest, 0) == -1)
-			{
-				if (CreateDirectory(strTest, NULL) == FALSE)
-				{
-					strMsg.Format(_T("CreateDirectory(strTest) fail, wordDir:%s"), strTest);
-					AfxMessageBox(strMsg);
-				}
-				else
-				{
-					m_strTestPath = strTest;
-				}
-			}
-			else
-			{
-				m_strTestPath = strTest;
-			}
-
-			if (_taccess(strValidation, 0) == -1)
-			{
-				if (CreateDirectory(strValidation, NULL) == FALSE)
-				{
-					strMsg.Format(_T("CreateDirectory(strValidation) fail, wordDir:%s"), strValidation);
-					AfxMessageBox(strMsg);
-				}
-				else
-				{
-					m_strValidationPath = strValidation;
-				}
-			}
-			else
-			{
-				m_strValidationPath = strValidation;
-			}			
+			m_strTrainPath = strTrain;
 		}
+	}
+	else
+	{
+		m_strTrainPath = strTrain;
+	}
+
+	if (_taccess(strTest, 0) == -1)
+	{
+		if (CreateDirectory(strTest, NULL) == FALSE)
+		{
+			CString strMsg = _T("");
+			strMsg.Format(_T("CreateDirectory(strTest) fail, wordDir:%s"), strTest);
+			AfxMessageBox(strMsg);
+		}
+		else
+		{
+			m_strTestPath = strTest;
+		}
+	}
+	else
+	{
+		m_strTestPath = strTest;
+	}
+
+	if (_taccess(strValidation, 0) == -1)
+	{
+		if (CreateDirectory(strValidation, NULL) == FALSE)
+		{
+			CString strMsg = _T("");
+			strMsg.Format(_T("CreateDirectory(strValidation) fail, wordDir:%s"), strValidation);
+			AfxMessageBox(strMsg);
+		}
+		else
+		{
+			m_strValidationPath = strValidation;
+		}
+	}
+	else
+	{
+		m_strValidationPath = strValidation;
 	}
 }
 
