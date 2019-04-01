@@ -10,6 +10,8 @@
 //#include "noise.h"
 #include "RandomNoise.h"
 
+#define	MIN_FILE_COUNT		10000
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -539,7 +541,7 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 				}
 				else
 				{
-					m_progress.SetRange(0, m_strWordlist.GetCount());
+					m_progress.SetRange(0, MIN_FILE_COUNT);
 					m_progress.SetPos(0);
 
 					m_posWord = m_strWordlist.GetHeadPosition();
@@ -608,13 +610,13 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nTimerWord = NULL;
 			ClearContorl();
 
-			if (m_nfile < 10000)
+			if (m_nfile < MIN_FILE_COUNT)
 			{
 				m_strWordlist.RemoveAll();
 				RunWordnoiser(m_strMyWord, m_strWordlist);
 				m_posWord = m_strWordlist.GetHeadPosition();
 				m_nTimerWord = SetTimer(1, 100, 0);
-			}			
+			}
 		}
 		else
 		{
@@ -634,7 +636,6 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			ClearContorl();
 		}
 	}
-
 	CDialogEx::OnTimer(nIDEvent);
 }
 

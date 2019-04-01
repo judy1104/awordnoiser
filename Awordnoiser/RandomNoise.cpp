@@ -61,9 +61,9 @@ int CRandomNoise::GetCharcode(CString strChar)
 
 	TCHAR* szChar;
 	szChar = (LPTSTR)(LPCTSTR)strChar;
-	int iAscii = __toascii(*(szChar));
+	int nAscii = __toascii(*(szChar));
 
-	return (iAscii - NUM_START_ASCII_UPPER) < NUM_CNT_SPELLING ? (iAscii - NUM_START_ASCII_UPPER) : (iAscii - NUM_START_ASCII_LOWER);
+	return (nAscii - NUM_START_ASCII_UPPER) < NUM_CNT_SPELLING ? (nAscii - NUM_START_ASCII_UPPER) : (nAscii - NUM_START_ASCII_LOWER);
 }
 
 BOOL CRandomNoise::ChangeSpelling(CString strWord, CStringList& retList, int nPos)
@@ -107,7 +107,7 @@ BOOL CRandomNoise::Changespelling(CString strWord, CStringList& retList)
 		CString strChar = strText.Mid(i, 1);
 		int nPos = GetCharcode(strChar);
 
-		if (nPos > 0 && nPos < NUM_CNT_SPELLING)
+		if (nPos >= 0 && nPos < NUM_CNT_SPELLING)
 		{
 			for (int j = 0; j < NUM_CNT_RNDCHANGE; ++j)
 			{
@@ -140,7 +140,7 @@ BOOL CRandomNoise::Changespelling(CString strWord, CStringList& retList)
 				CString strChar = strText.Mid(i, 1);
 				int nPos = GetCharcode(strChar);
 
-				if (nPos > 0 && nPos < NUM_CNT_SPELLING)
+				if (nPos >= 0 && nPos < NUM_CNT_SPELLING)
 				{
 					for (int j = 0; j < NUM_CNT_RNDCHANGE; ++j)
 					{
@@ -175,7 +175,7 @@ BOOL CRandomNoise::Changespelling(CString strWord, CStringList& retList)
 				CString strChar = strText.Mid(i, 1);
 				int nPos = GetCharcode(strChar);
 
-				if (nPos > 0 && nPos < NUM_CNT_SPELLING)
+				if (nPos >= 0 && nPos < NUM_CNT_SPELLING)
 				{
 					for (int j = 0; j < NUM_CNT_RNDCHANGE; ++j)
 					{
