@@ -29,6 +29,19 @@ BOOL CRandomNoise::GetWordList(CString strWord, CStringList& retList)
 	retList.RemoveAll();
 
 	GetChangespelling(strWord, retList);
+	if (retList.GetCount() < NUM_CNT_MAX / 100)
+	{
+		POSITION pos = retList.GetHeadPosition();
+		while (pos != retList.GetTailPosition())
+		{
+			if (retList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			AddSpecialChar(retList.GetNext(pos), retList, TRUE);
+		}
+	}
+
 	AddSpecialChar(strWord, retList);
 	
 	if (retList.IsEmpty() == FALSE)
@@ -61,7 +74,7 @@ BOOL CRandomNoise::ChangeSpelling(CString strWord, CStringList& retList, int nPo
 	CString strChar = strText.Mid(nPos, 1);
 	int nCode = GetCharcode(strChar);
 
-	if (nCode > 0 && nCode < NUM_CNT_SPELLING)
+	if (nCode >= 0 && nCode < NUM_CNT_SPELLING)
 	{
 		for (int i = 0; i < NUM_CNT_RNDCHANGE; ++i)
 		{
@@ -209,6 +222,7 @@ BOOL CRandomNoise::GetChangespelling(CString strWord, CStringList& retList)
 	CStringList myList; 
 	set<CString> mySet; 
 
+	// case 1
 	for (int i = 0; i < strWord.GetLength(); ++i)
 	{
 		GetRandomChange();
@@ -225,59 +239,100 @@ BOOL CRandomNoise::GetChangespelling(CString strWord, CStringList& retList)
 		myList.AddTail(*it);
 	}
 
-	pos = myList.GetHeadPosition();
-	while (pos != myList.GetTailPosition())
+	// case 2
+	if (myList.GetCount() < NUM_CNT_MAX / 10)
 	{
-		if(myList.GetCount() > NUM_CNT_MAX)
+		myList.RemoveAll();
+		for (int i = 0; i < strWord.GetLength(); ++i)
 		{
-			break;
+			GetRandomChange();
+			ChangeSpelling(strWord, myList, i);
 		}
-		CString strText = myList.GetNext(pos);
-		for (int j = 0; j < strText.GetLength(); ++j)
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 10)
+			{
+				break;
+			}
+			CString strText = myList.GetNext(pos);
+			for (int j = 0; j < strText.GetLength(); ++j)
+			{
+				if (myList.GetCount() > NUM_CNT_MAX / 10)
+				{
+					break;
+				}
+				GetRandomChange();
+				ChangeSpelling(strWord, myList, j);
+			}
+		}
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			mySet.insert(myList.GetNext(pos));
+		}
+		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
+		{
+			myList.AddTail(*it);
+		}
+	}
+
+	// case 3
+	if (myList.GetCount() < NUM_CNT_MAX / 10)
+	{
+		myList.RemoveAll();
+		for (int i = 0; i < strWord.GetLength(); ++i)
+		{
+			GetRandomChange();
+			ChangeSpelling(strWord, myList, i);
+		}
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 10)
+			{
+				break;
+			}
+			CString strText = myList.GetNext(pos);
+			for (int j = 0; j < strText.GetLength(); ++j)
+			{
+				if (myList.GetCount() > NUM_CNT_MAX / 10)
+				{
+					break;
+				}
+				GetRandomChange();
+				ChangeSpelling(strWord, myList, j);
+			}
+		}
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
 		{
 			if (myList.GetCount() > NUM_CNT_MAX)
 			{
 				break;
 			}
-			GetRandomChange();
-			ChangeSpelling(strWord, myList, j);
-		}
-	}
-
-	pos = myList.GetHeadPosition();
-	while (pos != myList.GetTailPosition())
-	{
-		mySet.insert(myList.GetNext(pos));
-	}
-	for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
-	{
-		myList.AddTail(*it);
-	}
-
-	pos = myList.GetHeadPosition();
-	while (pos != myList.GetTailPosition())
-	{
-		if (myList.GetCount() > NUM_CNT_MAX)
-		{
-			break;
-		}
-		CString strText = myList.GetNext(pos);
-		for (int j = 0; j < strText.GetLength(); ++j)
-		{
-			if (myList.GetCount() > NUM_CNT_MAX)
+			CString strText = myList.GetNext(pos);
+			for (int j = 0; j < strText.GetLength(); ++j)
 			{
-				break;
+				if (myList.GetCount() > NUM_CNT_MAX)
+				{
+					break;
+				}
+				GetRandomChange();
+				ChangeSpelling(strWord, myList, j);
 			}
-			GetRandomChange();
-			ChangeSpelling(strWord, myList, j);
 		}
-	}
 
-	pos = myList.GetHeadPosition();
-	while (pos != myList.GetTailPosition())
-	{
-		mySet.insert(myList.GetNext(pos));
-	}
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			mySet.insert(myList.GetNext(pos));
+		}
+	}	
 
 	for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
 	{
@@ -287,7 +342,7 @@ BOOL CRandomNoise::GetChangespelling(CString strWord, CStringList& retList)
 	return bResult;
 }
 
-BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList)
+BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bAddTwoChar/*=FALSE*/)
 {
 	BOOL bResult = TRUE;
 	int nLenWord = strWord.GetLength();
@@ -304,9 +359,37 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList)
 		mySet.insert(myList.GetNext(pos));
 	}
 
-	if (mySet.size() < NUM_CNT_MAX)
+	if (mySet.size() < NUM_CNT_MAX/2)
 	{
 		myList.RemoveAll();
+		RunAddingSpecial(strWord, myList);
+
+		set<CString> mySet2;
+		POSITION pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar2-1" << endl;
+			mySet2.insert(myList.GetNext(pos));
+		}
+
+		myList.RemoveAll();
+		for (set<CString>::iterator it = mySet2.begin(); it != mySet2.end(); ++it)
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			CString strText = *it;
+			RunAddingSpecial(strText, myList);
+		}
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar2-2" << endl;
+			mySet.insert(myList.GetNext(pos));
+		}
+		/*myList.RemoveAll();
 		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
 		{
 			if (myList.GetCount() > NUM_CNT_MAX/10)
@@ -322,12 +405,59 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList)
 		{
 			cout << "단어 생성중...#AddSpecialChar2" << endl;
 			mySet.insert(myList.GetNext(pos));
-		}
+		}*/
 	}
 
-	if (mySet.size() < NUM_CNT_MAX)
+	if ((bAddTwoChar == FALSE) && (mySet.size() < NUM_CNT_MAX/2))
 	{
 		myList.RemoveAll();
+		RunAddingSpecial(strWord, myList);
+
+		set<CString> mySet2;
+		POSITION pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar3-1" << endl;
+			mySet2.insert(myList.GetNext(pos));
+		}
+
+		myList.RemoveAll();
+		for (set<CString>::iterator it = mySet2.begin(); it != mySet2.end(); ++it)
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			CString strText = *it;
+			RunAddingSpecial(strText, myList);
+		}
+
+		set<CString> mySet3;
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar3-2" << endl;
+			mySet3.insert(myList.GetNext(pos));
+		}
+
+		myList.RemoveAll();
+		for (set<CString>::iterator it = mySet3.begin(); it != mySet3.end(); ++it)
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			CString strText = *it;
+			RunAddingSpecial(strText, myList);
+		}
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar3-3" << endl;
+			mySet.insert(myList.GetNext(pos));
+		}
+		/*myList.RemoveAll();
 		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
 		{
 			if (myList.GetCount() > NUM_CNT_MAX / 10)
@@ -343,12 +473,78 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList)
 		{
 			cout << "단어 생성중...#AddSpecialChar3" << endl;
 			mySet.insert(myList.GetNext(pos));
-		}
+		}*/
 	}	
 
-	if (mySet.size() < NUM_CNT_MAX)
+	if ((bAddTwoChar == FALSE) && (mySet.size() < NUM_CNT_MAX / 2))
 	{
 		myList.RemoveAll();
+		RunAddingSpecial(strWord, myList);
+
+		set<CString> mySet2;
+		POSITION pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar4-1" << endl;
+			mySet2.insert(myList.GetNext(pos));
+		}
+
+		myList.RemoveAll();
+		for (set<CString>::iterator it = mySet2.begin(); it != mySet2.end(); ++it)
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			CString strText = *it;
+			RunAddingSpecial(strText, myList);
+		}
+
+		set<CString> mySet3;
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar4-2" << endl;
+			mySet3.insert(myList.GetNext(pos));
+		}
+
+		myList.RemoveAll();
+		for (set<CString>::iterator it = mySet3.begin(); it != mySet3.end(); ++it)
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			CString strText = *it;
+			RunAddingSpecial(strText, myList);
+		}
+
+		set<CString> mySet4;
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar4-3" << endl;
+			mySet4.insert(myList.GetNext(pos));
+		}
+
+		myList.RemoveAll();
+		for (set<CString>::iterator it = mySet4.begin(); it != mySet4.end(); ++it)
+		{
+			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			{
+				break;
+			}
+			CString strText = *it;
+			RunAddingSpecial(strText, myList);
+		}
+
+		pos = myList.GetHeadPosition();
+		while (pos != myList.GetTailPosition())
+		{
+			cout << "단어 생성중...#AddSpecialChar4-4" << endl;
+			mySet.insert(myList.GetNext(pos));
+		}
+		/*myList.RemoveAll();
 		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
 		{
 			if (myList.GetCount() > NUM_CNT_MAX / 10)
@@ -364,7 +560,7 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList)
 		{
 			cout << "단어 생성중...#AddSpecialChar4" << endl;
 			mySet.insert(myList.GetNext(pos));
-		}
+		}*/
 	}
 
 	for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)

@@ -378,8 +378,8 @@ void CAwordnoiserDlg::ClearContorl()
 	m_btnRun.SetWindowTextW(_T("만들기"));
 	m_editWord.SetWindowTextW(m_strMyWord);
 	m_progress.SetPos(0);
-	m_stIndex.SetWindowTextW(_T(""));
-	m_stCount.SetWindowTextW(_T(""));
+	//m_stIndex.SetWindowTextW(_T(""));
+	//m_stCount.SetWindowTextW(_T(""));
 }
 
 void CAwordnoiserDlg::SetDlgControlIndex()
@@ -545,9 +545,9 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 					m_posWord = m_strWordlist.GetHeadPosition();
 					m_nTimerWord = SetTimer(1, 100, 0);
 
-					CString strMsg = _T("");
-					strMsg.Format(_T("%d"), m_strWordlist.GetCount() - 1);
-					m_stCount.SetWindowTextW(strMsg);
+					//CString strMsg = _T("");
+					//strMsg.Format(_T("%d"), m_strWordlist.GetCount() - 1);
+					//m_stCount.SetWindowTextW(strMsg);
 
 					m_bDoing = TRUE;
 					m_btnRun.SetWindowTextW(_T("중지"));
@@ -610,7 +610,10 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 
 			if (m_nfile < 10000)
 			{
-				OnBnClickedButton_Run();
+				m_strWordlist.RemoveAll();
+				RunWordnoiser(m_strMyWord, m_strWordlist);
+				m_posWord = m_strWordlist.GetHeadPosition();
+				m_nTimerWord = SetTimer(1, 100, 0);
 			}			
 		}
 		else
