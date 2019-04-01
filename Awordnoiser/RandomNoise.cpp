@@ -28,7 +28,7 @@ BOOL CRandomNoise::GetWordList(CString strWord, CStringList& retList)
 
 	retList.RemoveAll();
 
-	//GetChangespelling(strWord, retList);
+	GetChangespelling(strWord, retList);
 	AddSpecialChar(strWord, retList);
 	
 	if (retList.IsEmpty() == FALSE)
