@@ -138,7 +138,7 @@ BOOL CAwordnoiserDlg::OnInitDialog()
 			return FALSE;
 		}
 	}	
-
+	
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -548,7 +548,7 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 				if (m_nTimerBow == NULL)
 				{
 					CheckDirectory(m_strMyDirectory, STR_WORDSET_FOLDER);
-					m_nTimerBow = SetTimer(2, 100, NULL);
+					m_nTimerBow = SetTimer(2, 200, NULL);
 				}
 			}						
 		}
@@ -653,6 +653,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == 1)
 	{		
 		SetEditcontrolText(m_strWordlist.GetNext(m_posWord));
+		SaveTextFile();
 		CaptureEditcontrol(m_strMyDirectory, m_strMyWord);	
 		SetDlgControlIndex();
 
@@ -672,6 +673,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			KillTimer(m_nTimerBow);
 			m_nTimerBow = NULL;
+			m_strTextPath = _T("");
 			ClearContorl();
 		}
 	}
@@ -712,4 +714,39 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 	::DragFinish(hDropInfo);
 
 	CDialogEx::OnDropFiles(hDropInfo);
+}
+
+void CAwordnoiserDlg::SaveTextFile()
+{
+	CString strText = _T("");
+	CString strText2 = _T("");
+	m_editWord.GetWindowTextW(strText);
+
+	strText2.Format(_T("%s\r\n"), strText);
+	
+	if (m_strTextPath.IsEmpty() == TRUE)
+	{
+		m_strTextPath.Format(_T("%s//%s.txt"), m_strMyDirectory, m_strMyWord);
+	}
+
+	CFile  pf;
+	
+	if (pf.Open(m_strTextPath, CFile::modeReadWrite | CFile::shareDenyNone) == FALSE)
+	{
+		if (pf.Open(m_strTextPath, CFile::modeCreate | CFile::modeReadWrite | CFile::shareDenyNone) == FALSE)
+		{
+			return;
+		}
+		else
+		{
+			USHORT nShort = 0xfeff;
+			pf.Write(&nShort, sizeof(USHORT));
+		}
+	}
+	pf.SeekToEnd();
+
+	int nSize = _tcslen(strText2) * sizeof(TCHAR);
+	pf.Write(strText2, nSize);
+	
+	pf.Close();
 }

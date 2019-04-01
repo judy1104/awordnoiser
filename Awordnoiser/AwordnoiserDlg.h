@@ -36,6 +36,8 @@ private:
 	CString m_strTestPath = _T("");
 	CString m_strValidationPath = _T("");
 
+	CString m_strTextPath = _T("");
+
 	CStringList	m_strWordlist; 
 	CStringList m_strBowlist; 
 
@@ -52,6 +54,7 @@ private:
 	void SetDlgControlIndex();
 	void SetEditcontrolText(CString strText);
 	void CheckDirectory(CString strPath, CString strFolder);
+	void SaveTextFile();
 
 // 구현입니다.
 protected:
