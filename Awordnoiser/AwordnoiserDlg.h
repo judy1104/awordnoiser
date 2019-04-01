@@ -55,6 +55,7 @@ private:
 	void SetEditcontrolText(CString strText);
 	void CheckDirectory(CString strPath, CString strFolder);
 	void SaveTextFile();
+	void LoadBadwords(CStringList strBadList);
 
 // 구현입니다.
 protected:

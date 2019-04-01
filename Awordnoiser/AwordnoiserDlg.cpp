@@ -285,63 +285,6 @@ void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int
 	// 사용했던 비트맵과 DC 를 해제한다.
 	if (NULL != h_bitmap) DeleteObject(h_bitmap);
 	if (NULL != h_screen_dc) ::ReleaseDC(NULL, h_screen_dc);
-
-// 	CWnd*  myWnd = this->GetDlgItem(IDC_EDIT1);
-// 	CDC memDC;
-// 	CBitmap bitmap;
-// 
-// 	CClientDC dc(this);      // dc선언해주고 (this)에 화면을 출력하기 위해선언
-// 	CClientDC ScreenDC(myWnd);   // 스크린DC 선언
-// 
-// 	memDC.CreateCompatibleDC(&ScreenDC);   // 스크린DC와 호환되는 DC생성
-// 	bitmap.CreateCompatibleBitmap(&ScreenDC, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT);   // 스크린DC와 호환되는 비트맵 생성
-// 	CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);   // Bitmap 포인터를 넘겨줌
-// 	memDC.StretchBlt(0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, &ScreenDC, 0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, SRCCOPY);   // 스크린DC에 저장된화면을 memDC에 copy, bitmap에도 기록됨
-// 																														  // 출력
-// 	dc.BitBlt(0, 0, NUM_SIZE_WIDTH, NUM_SIZE_HEIGHT, &memDC, 0, 0, SRCCOPY);   // 0,0 부터 해상도크기까지 memDC가 가리키는 참조값 0, 0부터 복사해서 출력함
-// 
-// 	memDC.SelectObject(pOldBitmap);
-// 	DeleteDC(memDC);
-// 
-// 
-// 	// DIB의 형식을 정의한다.
-// 	BITMAPINFO dib_define;
-// 	dib_define.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-// 	dib_define.bmiHeader.biWidth = NUM_SIZE_WIDTH;
-// 	dib_define.bmiHeader.biHeight = NUM_SIZE_HEIGHT;
-// 	dib_define.bmiHeader.biPlanes = 1;
-// 	dib_define.bmiHeader.biBitCount = 24;
-// 	dib_define.bmiHeader.biCompression = BI_RGB;
-// 	dib_define.bmiHeader.biSizeImage = (((NUM_SIZE_WIDTH * 24 + 31) & ~31) >> 3) * NUM_SIZE_HEIGHT;
-// 	dib_define.bmiHeader.biXPelsPerMeter = 0;
-// 	dib_define.bmiHeader.biYPelsPerMeter = 0;
-// 	dib_define.bmiHeader.biClrImportant = 0;
-// 	dib_define.bmiHeader.biClrUsed = 0;
-// 	
-// 	// DIB 파일의 헤더 내용을 구성한다.
-// 	BITMAPFILEHEADER dib_format_layout;
-// 	ZeroMemory(&dib_format_layout, sizeof(BITMAPFILEHEADER));
-// 	dib_format_layout.bfType = *(WORD*)"BM";
-// 	dib_format_layout.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dib_define.bmiHeader.biSizeImage;
-// 	dib_format_layout.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-// 
-// 	CString strFilename = _T("");
-// 	strFilename.Format(_T("%s\\%s\\%s_%d.jpg"), m_strMyDirectory, m_strMyWord, m_strMyWord, m_nfile);
-// 	int length = strFilename.GetLength();
-// 	char* st = new char[length];
-// 	//strcpy_s(st, length, (CT2A)strFilename);
-// 	strcpy(st, (CT2A)strFilename);
-// 
-// 	errno_t err = 0;
-// 	FILE *p_file =fopen(st, "wb");
-// 	//err = fopen_s(&p_file, st, "wb");
-// 	if ((err == 0)&&(p_file != NULL))
-// 	{			
-// 		fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);		
-// 		fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);		
-// 		fwrite(NULL, 1, dib_define.bmiHeader.biSizeImage, p_file);	
-// 		++m_nfile;
-// 	}
 }
 
 CString CAwordnoiserDlg::GetWord(CString strMsg)
@@ -429,11 +372,9 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, i
 }
 
 void CAwordnoiserDlg::ClearContorl()
-{
-	m_nfile = 0;
+{	
 	m_progress.SetPos(m_strWordlist.GetCount());
 
-	AfxMessageBox(_T("끝"));
 	m_btnRun.SetWindowTextW(_T("만들기"));
 	m_editWord.SetWindowTextW(m_strMyWord);
 	m_progress.SetPos(0);
@@ -656,16 +597,25 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 {
 	if (nIDEvent == 1)
 	{		
+		KillTimer(m_nTimerWord);
 		SetEditcontrolText(m_strWordlist.GetNext(m_posWord));
 		SaveTextFile();
 		CaptureEditcontrol(m_strMyDirectory, m_strMyWord);	
 		SetDlgControlIndex();
-
+				
 		if ((m_strWordlist.IsEmpty() == TRUE)||(m_posWord == m_strWordlist.GetTailPosition()))
 		{
-			KillTimer(m_nTimerWord);
 			m_nTimerWord = NULL;
 			ClearContorl();
+
+			if (m_nfile < 10000)
+			{
+				OnBnClickedButton_Run();
+			}			
+		}
+		else
+		{
+			m_nTimerWord = SetTimer(1, 100, 0);
 		}
 	}
 	else if (nIDEvent == 2)
@@ -753,4 +703,16 @@ void CAwordnoiserDlg::SaveTextFile()
 	pf.Write(strText2, nSize);
 	
 	pf.Close();
+}
+
+void CAwordnoiserDlg::LoadBadwords(CStringList strBadList)
+{
+	CString strPath = _T("");
+	strPath.Format(_T("%s//bad-words.csv"), m_strMyDirectory);
+
+	CFile  pf;
+	if (pf.Open(m_strTextPath, CFile::modeReadWrite | CFile::shareDenyNone) == FALSE)
+	{
+
+	}
 }

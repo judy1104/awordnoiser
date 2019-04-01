@@ -70,7 +70,7 @@ BOOL CRandomNoise::ChangeSpelling(CString strWord, CStringList& retList, int nPo
 			{
 				CString str1 = strText.Left(nPos);
 				CString str2 = strnew;
-				CString str3 = strText.Right(strWord.GetLength()-1);
+				CString str3 = strText.Right(strWord.GetLength() - nPos - 1);
 				CString str4 = _T("");
 				str4.Format(_T("%s%s%s"), str1, str2, str3);
 				retList.AddTail(str4);
@@ -178,10 +178,21 @@ BOOL CRandomNoise::Changespelling(CString strWord, CStringList& retList)
 		}
 	}
 
-	if (mySet.size() < NUM_CNT_MAX)
+	CStringList	myList;
+	for (auto it = mySet.begin(); it != mySet.end(); it++) 
 	{
+		if (myList.GetCount() > NUM_CNT_MAX/10)
+		{
+			break;
+		}
+		RunAddingSpecial(*it, myList);
+	}
 
-	}	
+	POSITION pos = myList.GetHeadPosition();
+	while (pos != myList.GetTailPosition())
+	{
+		mySet.insert(myList.GetNext(pos));
+	}
 
 	for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
 	{
@@ -432,6 +443,42 @@ BOOL CRandomNoise::RunAddingSpecial(CString strWord, CStringList& retList)
 			}
 			SetAddingSpecial(strWord, retList, *it);
 			cout << "단어 생성중...#RunAddingSpecial" << endl;
+		}
+
+		mySet.clear();
+		srand((unsigned int)time(NULL));
+		
+		while (mySet.size() < nCount)
+		{
+			mySet.insert(rand() % (nLenWord - 1) + 1);
+		}
+
+		for (set<int>::iterator it = mySet.begin(); it != mySet.end(); ++it)
+		{
+			if (retList.GetCount() > NUM_CNT_MAX / 10)
+			{
+				break;
+			}
+			SetAddingSpecial(strWord, retList, *it);
+			cout << "단어 생성중...#RunAddingSpecial2" << endl;
+		}
+
+		mySet.clear();
+		srand((unsigned int)time(NULL));
+				
+		while (mySet.size() < nCount)
+		{
+			mySet.insert(rand() % (nLenWord - 1) + 1);
+		}
+
+		for (set<int>::iterator it = mySet.begin(); it != mySet.end(); ++it)
+		{
+			if (retList.GetCount() > NUM_CNT_MAX / 10)
+			{
+				break;
+			}
+			SetAddingSpecial(strWord, retList, *it);
+			cout << "단어 생성중...#RunAddingSpecial3" << endl;
 		}
 	}
 
