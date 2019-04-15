@@ -24,6 +24,7 @@ public:
 
 private:
 	int		m_nfile = 0;
+	int		m_nCntSentence = 0;
 	int		m_nTimerWord;
 	int		m_nTimerBow;
 
@@ -47,6 +48,7 @@ private:
 private:
 	CString GetCurretDirectory();
 	void CaptureEditcontrol(CString strPath, CString strFolder, int nWidth = NUM_SIZE_WIDTH, int nHeight = NUM_SIZE_HEIGHT);
+	void CaptureEditcontrol_Sentence(CString strPath, CString strName= _T("sentence"), int nWidth = NUM_SIZE_WIDTH, int nHeight = 100);
 	CString GetWord(CString strMsg);
 	BOOL ReadWordsetfile(CStringList& strlBOWA, CString strPath);
 	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist, int nFilter=10);
@@ -73,14 +75,15 @@ private:
 	CEdit m_editWord;
 	CStatic m_stCount;
 	CStatic m_stIndex;
-	CStatic m_stWordsetPath;
+	CStatic m_stWordPath;
+	CStatic m_stSentencePath;
 	CProgressCtrl m_progress;
 	CButton m_btnRun;
 
 	afx_msg void OnBnClickedButton_Run();
-	afx_msg void OnBnClickedButton_Expectedwork();
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButton3();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);	
 	afx_msg void OnDropFiles(HDROP hDropInfo);	
-public:
-	afx_msg void OnBnClickedBtnExsentence();
+	
 };

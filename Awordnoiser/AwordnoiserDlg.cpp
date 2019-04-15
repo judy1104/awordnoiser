@@ -69,7 +69,8 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
 	DDX_Control(pDX, IDC_ST_COUNT, m_stCount);
 	DDX_Control(pDX, IDC_ST_INDEX, m_stIndex);
-	DDX_Control(pDX, IDC_ST_WORDSET_PATH, m_stWordsetPath);	
+	DDX_Control(pDX, IDC_ST_WORDSET_PATH, m_stSentencePath);
+	DDX_Control(pDX, IDC_ST_WORDSET_PATH0, m_stWordPath);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -77,10 +78,11 @@ BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CAwordnoiserDlg::OnBnClickedButton_Run)
-	ON_BN_CLICKED(IDC_BUTTON2, &CAwordnoiserDlg::OnBnClickedButton_Expectedwork)
-	ON_BN_CLICKED(IDC_BTN_EXSENTENCE, &CAwordnoiserDlg::OnBnClickedBtnExsentence)
+	ON_BN_CLICKED(IDC_BUTTON2, &CAwordnoiserDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CAwordnoiserDlg::OnBnClickedButton3)
 	ON_WM_TIMER()
 	ON_WM_DROPFILES()
+	
 END_MESSAGE_MAP()
 
 
@@ -267,6 +269,78 @@ void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int
 		fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
 		fclose(p_file);
 		++m_nfile;
+	}
+
+	// 사용했던 비트맵과 DC 를 해제한다.
+	if (NULL != h_bitmap) DeleteObject(h_bitmap);
+	if (NULL != h_screen_dc) ::ReleaseDC(NULL, h_screen_dc);
+}
+
+
+void CAwordnoiserDlg::CaptureEditcontrol_Sentence(CString strPath, CString strName /*= _T("sentence")*/, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
+{
+	CWnd*  myWnd = this->GetDlgItem(IDC_EDIT3);
+	CClientDC ScreenDC(myWnd);
+	HDC h_screen_dc = ScreenDC;
+
+	// DIB형식 정의
+	BITMAPINFO dib_define;
+	dib_define.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	dib_define.bmiHeader.biWidth = nWidth;
+	dib_define.bmiHeader.biHeight = nHeight;
+	dib_define.bmiHeader.biPlanes = 1;
+	dib_define.bmiHeader.biBitCount = 24;
+	dib_define.bmiHeader.biCompression = BI_RGB;
+	dib_define.bmiHeader.biSizeImage = (((nWidth * 24 + 31) & ~31) >> 3) * nHeight;
+	dib_define.bmiHeader.biXPelsPerMeter = 0;
+	dib_define.bmiHeader.biYPelsPerMeter = 0;
+	dib_define.bmiHeader.biClrImportant = 0;
+	dib_define.bmiHeader.biClrUsed = 0;
+
+	// DIB의 내부 이미지 비트 패턴을 참조할 포인터 변수
+	BYTE *p_image_data = NULL;
+
+	// dib_define에 정의된 내용으로 DIB생성
+	HBITMAP h_bitmap = ::CreateDIBSection(h_screen_dc, &dib_define, DIB_RGB_COLORS, (void **)&p_image_data, 0, 0);
+
+	// 캡쳐한 이미지 추출을 위한 가상 dc생성
+	HDC h_memory_dc = ::CreateCompatibleDC(h_screen_dc);
+
+	// 가상 DC에 이미지를 추출할 비트맵 연결
+	HBITMAP h_old_bitmap = (HBITMAP)::SelectObject(h_memory_dc, h_bitmap);
+
+	// 화면을 캡쳐
+	::BitBlt(h_memory_dc, 0, 0, nWidth, nHeight, h_screen_dc, 0, 0, SRCCOPY);
+
+	// 본래의 비트맵으로 복구
+	::SelectObject(h_memory_dc, h_old_bitmap);
+
+	// 가상 DC를 제거
+	DeleteDC(h_memory_dc);
+
+	// DIB 파일의 헤더 내용 구성
+	BITMAPFILEHEADER dib_format_layout;
+	ZeroMemory(&dib_format_layout, sizeof(BITMAPFILEHEADER));
+	dib_format_layout.bfType = *(WORD*)"BM";
+	dib_format_layout.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dib_define.bmiHeader.biSizeImage;
+	dib_format_layout.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+	// 이미지 파일 생성
+	CString strFilename = _T("");
+
+	strFilename.Format(_T("%s\\sentence_%d.jpg"), strPath, m_nCntSentence);
+
+	int length = strFilename.GetLength();
+	char* st = new char[length];
+	strcpy(st, (CT2A)strFilename);
+
+	FILE *p_file = fopen(st, "wb");
+	if (p_file != NULL) {
+		fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);
+		fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);
+		fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
+		fclose(p_file);
+		++m_nCntSentence;
 	}
 
 	// 사용했던 비트맵과 DC 를 해제한다.
@@ -527,25 +601,19 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 	}
 }
 
-void CAwordnoiserDlg::OnBnClickedButton_Expectedwork()
+void CAwordnoiserDlg::OnBnClickedButton2()
 {
-	CString		strWord = _T("");
-	m_editWord.GetWindowTextW(strWord);
-	if (strWord.IsEmpty() == TRUE)
-	{
-		AfxMessageBox(_T("...?"));
-		return;
-	}
+	CString strFile = _T("");
+	m_stWordPath.GetWindowTextW(strFile);
 
-	if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+	if (strFile.IsEmpty() == TRUE)
 	{
-		CString strMsg = _T("");
-		strMsg.Format(_T("예상 단어 수:%d"), m_strWordlist.GetCount());
-		AfxMessageBox(strMsg);
+		AfxMessageBox(_T("NO FILE"));
 	}
 	else
 	{
-		AfxMessageBox(_T("RunWordnoiser failed"));
+		// 파일읽기,
+		// 단어 리스트 만들기.
 	}
 }
 
@@ -614,7 +682,7 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		strFilename = szFilename;
 		if (strFilename.CompareNoCase(STR_WORDSET_FILENAME) == 0)
 		{
-			m_stWordsetPath.SetWindowTextW(szPathname);
+			m_stSentencePath.SetWindowTextW(szPathname);
 		}
 		else
 		{
@@ -674,20 +742,22 @@ void CAwordnoiserDlg::LoadBadwords(CStringList strBadList)
 	}
 }
 
-void CAwordnoiserDlg::OnBnClickedBtnExsentence()
-{	
+void CAwordnoiserDlg::OnBnClickedButton3()
+{
 	CString strFile = _T("");
-	m_stWordsetPath.GetWindowTextW(strFile);
+	m_stSentencePath.GetWindowTextW(strFile);
 
-	if (_taccess(strFile, 0) == -1)
+	if (strFile.IsEmpty() == TRUE)
 	{
-		AfxMessageBox(_T("No file"));
+		CaptureEditcontrol_Sentence(m_strMyDirectory, _T("sentence"));
 	}
 	else
 	{
-		// 메모장에서 읽은 문장을 리스트에 넣기. 
-		// 원본 캡처 후 저장, 그리고
-		// 형용사를 변형된 욕설로 교체
-		// 변형 문장 캡처 후 저장. 
+		
 	}
+
+	// 메모장에서 읽은 문장을 리스트에 넣기. 
+	// 원본 캡처 후 저장, 그리고
+	// 형용사를 변형된 욕설로 교체
+	// 변형 문장 캡처 후 저장. 
 }

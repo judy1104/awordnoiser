@@ -345,7 +345,7 @@ BOOL CRandomNoise::GetChangespelling(CString strWord, CStringList& retList)
 	return bResult;
 }
 
-BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bAddTwoChar/*=FALSE*/)
+BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bAddOneChar/*=FALSE*/)
 {
 	BOOL bResult = TRUE;
 	int nLenWord = strWord.GetLength();
@@ -362,40 +362,40 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bA
 		mySet.insert(myList.GetNext(pos));
 	}
 
-	if (mySet.size() < NUM_CNT_MAX/2)
+	if ((bAddOneChar == FALSE) && (mySet.size() < NUM_CNT_MAX/2))
 	{
-		myList.RemoveAll();
-		RunAddingSpecial(strWord, myList);
-
-		set<CString> mySet2;
-		POSITION pos = myList.GetHeadPosition();
-		while (pos != myList.GetTailPosition())
+		if (mySet.size() < NUM_CNT_MAX / 2)
 		{
-			cout << "단어 생성중...#AddSpecialChar2-1" << endl;
-			mySet2.insert(myList.GetNext(pos));
-		}
+			myList.RemoveAll();
+			RunAddingSpecial(strWord, myList);
 
-		myList.RemoveAll();
-		for (set<CString>::iterator it = mySet2.begin(); it != mySet2.end(); ++it)
-		{
-			if (myList.GetCount() > NUM_CNT_MAX / 100)
+			set<CString> mySet2;
+			POSITION pos = myList.GetHeadPosition();
+			while (pos != myList.GetTailPosition())
 			{
-				break;
+				cout << "단어 생성중...#AddSpecialChar2-1" << endl;
+				mySet2.insert(myList.GetNext(pos));
 			}
-			CString strText = *it;
-			RunAddingSpecial(strText, myList);
+
+			myList.RemoveAll();
+			for (set<CString>::iterator it = mySet2.begin(); it != mySet2.end(); ++it)
+			{
+				if (myList.GetCount() > NUM_CNT_MAX / 100)
+				{
+					break;
+				}
+				CString strText = *it;
+				RunAddingSpecial(strText, myList);
+			}
+
+			pos = myList.GetHeadPosition();
+			while (pos != myList.GetTailPosition())
+			{
+				cout << "단어 생성중...#AddSpecialChar2-2" << endl;
+				mySet.insert(myList.GetNext(pos));
+			}
 		}
 
-		pos = myList.GetHeadPosition();
-		while (pos != myList.GetTailPosition())
-		{
-			cout << "단어 생성중...#AddSpecialChar2-2" << endl;
-			mySet.insert(myList.GetNext(pos));
-		}
-	}
-
-	if ((bAddTwoChar == FALSE) && (mySet.size() < NUM_CNT_MAX/2))
-	{
 		myList.RemoveAll();
 		RunAddingSpecial(strWord, myList);
 
@@ -445,7 +445,7 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bA
 		}
 	}	
 
-	if ((bAddTwoChar == FALSE) && (mySet.size() < NUM_CNT_MAX / 2))
+	if ((bAddOneChar == FALSE) && (mySet.size() < NUM_CNT_MAX / 2))
 	{
 		myList.RemoveAll();
 		RunAddingSpecial(strWord, myList);

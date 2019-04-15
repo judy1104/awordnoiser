@@ -40,7 +40,7 @@
 
 #define SIZE_DEFAUTL			1024
 #define ISNOTNORMAL				(-1)
-#define NUM_SIZE_WIDTH			150
+#define NUM_SIZE_WIDTH			160
 #define NUM_SIZE_HEIGHT			20
 #define STR_WORDSET_FILENAME	_T("ExSentence.txt")
 #define STR_WORDSET_FOLDER		_T("wordset")

@@ -29,7 +29,7 @@ private:
 	BOOL ChangeSpelling(CString strWord, CStringList& retList, int nPos);
 	BOOL Changespelling(CString strWord, CStringList& retList);
 	BOOL GetChangespelling(CString strWord, CStringList& retList);
-	BOOL AddSpecialChar(CString strWord, CStringList& retList, BOOL bAddTwoChar=FALSE);
+	BOOL AddSpecialChar(CString strWord, CStringList& retList, BOOL bAddOneChar=FALSE);
 	BOOL SetAddingSpecial(CString strWord, CStringList& retList, int nPos);
 	BOOL RunAddingSpecial(CString strWord, CStringList& retList);
 	
