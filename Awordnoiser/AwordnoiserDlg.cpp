@@ -65,15 +65,8 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT1, m_editWord);
-	DDX_Control(pDX, IDC_CHECK1, m_ckop1);
-	DDX_Control(pDX, IDC_CHECK2, m_ckop2);
-	DDX_Control(pDX, IDC_CHECK3, m_ckop3);
-	DDX_Control(pDX, IDC_CHECK4, m_ckop4);
-	DDX_Control(pDX, IDC_CHECK5, m_ckop5);
-	DDX_Control(pDX, IDC_CHECK6, m_ckWordset);
 	DDX_Control(pDX, IDC_PROGRESS1, m_progress);
 	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
-	DDX_Control(pDX, IDC_EDIT_FILTER, m_editFilter);
 	DDX_Control(pDX, IDC_ST_COUNT, m_stCount);
 	DDX_Control(pDX, IDC_ST_INDEX, m_stIndex);
 	DDX_Control(pDX, IDC_ST_WORDSET_PATH, m_stWordsetPath);	
@@ -85,6 +78,7 @@ BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CAwordnoiserDlg::OnBnClickedButton_Run)
 	ON_BN_CLICKED(IDC_BUTTON2, &CAwordnoiserDlg::OnBnClickedButton_Expectedwork)
+	ON_BN_CLICKED(IDC_BTN_EXSENTENCE, &CAwordnoiserDlg::OnBnClickedBtnExsentence)
 	ON_WM_TIMER()
 	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
@@ -120,15 +114,6 @@ BOOL CAwordnoiserDlg::OnInitDialog()
 	//  프레임워크가 이 작업을 자동으로 수행합니다.
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
-
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-
-	m_ckop1.SetCheck(TRUE);
-	m_ckop3.SetCheck(TRUE);
-	m_ckop4.SetCheck(TRUE);
-	m_ckop5.SetCheck(TRUE);
-
-	m_editFilter.SetWindowTextW(_T("20"));
 
 	CString strPath = _T("");
 	strPath = GetCurretDirectory();
@@ -400,177 +385,146 @@ void CAwordnoiserDlg::SetEditcontrolText(CString strText)
 	m_editWord.SetWindowText(strText);
 }
 
-void CAwordnoiserDlg::CheckDirectory(CString strPath, CString strFolder)
+BOOL CAwordnoiserDlg::MakeDataDirectory(CString strMyPath, CString strType, CString strWord)
 {
-	CString		strwordDir = _T("");
-
-	strwordDir.Format(_T("%s\\%s"), strPath, strFolder);
-	if (_taccess(strwordDir, 0) == ISNOTNORMAL)
+	if ((strMyPath.IsEmpty() == TRUE) || (strType.IsEmpty() == TRUE) || (strWord.IsEmpty() ==TRUE))
 	{
-		CString strMsg = _T("");
+		return FALSE;
+	}
 
-		if (CreateDirectory(strwordDir, NULL) == FALSE)
+	BOOL bResult = TRUE;
+	CString strMsg = _T("");
+
+	if (_taccess(strMyPath, 0) == -1)
+	{
+		if (CreateDirectory(strMyPath, NULL) == FALSE)
 		{
-			strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
+			strMsg.Format(_T("CreateDirectory fail, dir:%s"), strMyPath);
 			AfxMessageBox(strMsg);
-			return;
+			return FALSE;
 		}
 	}
 
-	CString strTrain = _T("");
-	CString strTest = _T("");
-	CString strValidation = _T("");
+	CString strPath = _T("");
+	strPath.Format(_T("%s\\%s"), strMyPath, strType);
 
-	strTrain.Format(_T("%s\\train"), strwordDir);
-	strTest.Format(_T("%s\\test"), strwordDir);
-	strValidation.Format(_T("%s\\validation"), strwordDir);
-
-	if (_taccess(strTrain, 0) == -1)
+	if (_taccess(strPath, 0) == -1)
 	{
-		if (CreateDirectory(strTrain, NULL) == FALSE)
+		if (CreateDirectory(strPath, NULL) == FALSE)
 		{
-			CString strMsg = _T("");
-			strMsg.Format(_T("CreateDirectory(strTrain) fail, wordDir:%s"), strTrain);
+			strMsg.Format(_T("CreateDirectory fail, dir:%s"), strPath);
 			AfxMessageBox(strMsg);
+			return FALSE;
 		}
-		else
+	}
+
+	strPath.Format(_T("%s\\%s\\%s"), strMyPath, strType, strWord);
+	if (_taccess(strPath, 0) == -1)
+	{
+		if (CreateDirectory(strPath, NULL) == FALSE)
 		{
-			m_strTrainPath = strTrain;
+			strMsg.Format(_T("CreateDirectory fail, dir:%s"), strPath);
+			AfxMessageBox(strMsg);
+			return FALSE;
 		}
+	}
+
+	return bResult; 	
+}
+
+BOOL CAwordnoiserDlg::CheckDirectory(CString strPath, CString strWord)
+{
+	BOOL bResult = TRUE; 
+
+	if (MakeDataDirectory(strPath, _T("train"), strWord) == TRUE)
+	{
+		CString strFolderPath = _T("");
+		strFolderPath.Format(_T("%s\\train\\%s"), strPath, strWord);
+		m_strTrainPath = strFolderPath;
 	}
 	else
 	{
-		m_strTrainPath = strTrain;
+		bResult = FALSE; 
 	}
 
-	if (_taccess(strTest, 0) == -1)
+	if (MakeDataDirectory(strPath, _T("test"), strWord) == TRUE)
 	{
-		if (CreateDirectory(strTest, NULL) == FALSE)
-		{
-			CString strMsg = _T("");
-			strMsg.Format(_T("CreateDirectory(strTest) fail, wordDir:%s"), strTest);
-			AfxMessageBox(strMsg);
-		}
-		else
-		{
-			m_strTestPath = strTest;
-		}
+		CString strFolderPath = _T("");
+		strFolderPath.Format(_T("%s\\test\\%s"), strPath, strWord);
+		m_strTestPath = strFolderPath;
 	}
 	else
 	{
-		m_strTestPath = strTest;
+		bResult = FALSE;
 	}
 
-	if (_taccess(strValidation, 0) == -1)
+	if (MakeDataDirectory(strPath, _T("validation"), strWord) == TRUE)
 	{
-		if (CreateDirectory(strValidation, NULL) == FALSE)
-		{
-			CString strMsg = _T("");
-			strMsg.Format(_T("CreateDirectory(strValidation) fail, wordDir:%s"), strValidation);
-			AfxMessageBox(strMsg);
-		}
-		else
-		{
-			m_strValidationPath = strValidation;
-		}
-	}
+		CString strFolderPath = _T("");
+		strFolderPath.Format(_T("%s\\validation\\%s"), strPath, strWord);
+		m_strValidationPath = strFolderPath;
+	}	
 	else
 	{
-		m_strValidationPath = strValidation;
+		bResult = FALSE;
 	}
+	
+	return bResult; 
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
 {
-	if (m_ckWordset.GetCheck() == TRUE)
+	if (m_bDoing == FALSE)
 	{
-		CString strPath = _T("");
-		m_stWordsetPath.GetWindowTextW(strPath);
-		
-		if (ReadWordsetfile(m_strBowlist, strPath) == TRUE)
+		CString		strWord = _T("");
+		//CString		strwordDir = _T("");
+
+		m_editWord.GetWindowTextW(strWord);
+		if (strWord.IsEmpty() == TRUE)
 		{
-			if (m_strBowlist.IsEmpty() == FALSE)
+			AfxMessageBox(_T("IsEmpty error"));
+			return;
+		}
+		
+		if (CheckDirectory(m_strMyDirectory, strWord) == FALSE)
+		{
+			AfxMessageBox(_T("CheckDirectory error"));
+			return;
+		}
+
+		if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+		{
+			if (m_strWordlist.IsEmpty() == TRUE)
 			{
-				m_posBowset = m_strBowlist.GetHeadPosition();
-				if (m_nTimerBow == NULL)
-				{
-					CheckDirectory(m_strMyDirectory, STR_WORDSET_FOLDER);
-					m_nTimerBow = SetTimer(2, 200, NULL);
-				}
-			}						
+				AfxMessageBox(_T("wordlist is empty"));
+			}
+			else
+			{
+				m_progress.SetRange(0, MIN_FILE_COUNT);
+				m_progress.SetPos(0);
+
+				m_posWord = m_strWordlist.GetHeadPosition();
+				m_nTimerWord = SetTimer(1, 100, 0);
+
+				m_bDoing = TRUE;
+				m_btnRun.SetWindowTextW(_T("중지"));
+			}
 		}
 		else
 		{
-			AfxMessageBox(_T("ReadWordsetfile failed"));
+			AfxMessageBox(_T("RunWordnoiser failed"));
 		}
 	}
 	else
 	{
-		if (m_bDoing == FALSE)
+		m_bDoing = FALSE;
+		m_btnRun.SetWindowTextW(_T("만들기"));
+		m_editWord.SetWindowTextW(m_strMyWord);
+		if (m_nTimerWord)
 		{
-			CString		strWord = _T("");
-			//CString		strwordDir = _T("");
-
-			m_editWord.GetWindowTextW(strWord);
-			if (strWord.IsEmpty() == TRUE)
-			{
-				AfxMessageBox(_T("...?"));
-				return;
-			}
-
-			CheckDirectory(m_strMyDirectory, strWord);
-// 			strwordDir.Format(_T("%s\\%s"), m_strMyDirectory, strWord);
-// 			if (_taccess(strwordDir, 0) == ISNOTNORMAL)
-// 			{
-// 				if (CreateDirectory(strwordDir, NULL) == FALSE)
-// 				{
-// 					CString strMsg = _T("");
-// 					strMsg.Format(_T("CreateDirectory fail, wordDir:%s"), strwordDir);
-// 					AfxMessageBox(strMsg);
-// 				}
-// 			}
-
-			CString strFilter = _T("");
-			m_editFilter.GetWindowTextW(strFilter);
-
-			if (RunWordnoiser(strWord, m_strWordlist, _ttoi(strFilter)) == TRUE)
-			{
-				if (m_strWordlist.IsEmpty() == TRUE)
-				{
-					AfxMessageBox(_T("wordlist is empty"));
-				}
-				else
-				{
-					m_progress.SetRange(0, MIN_FILE_COUNT);
-					m_progress.SetPos(0);
-
-					m_posWord = m_strWordlist.GetHeadPosition();
-					m_nTimerWord = SetTimer(1, 100, 0);
-
-					//CString strMsg = _T("");
-					//strMsg.Format(_T("%d"), m_strWordlist.GetCount() - 1);
-					//m_stCount.SetWindowTextW(strMsg);
-
-					m_bDoing = TRUE;
-					m_btnRun.SetWindowTextW(_T("중지"));
-				}
-			}
-			else
-			{
-				AfxMessageBox(_T("RunWordnoiser failed"));
-			}
+			KillTimer(m_nTimerWord);
 		}
-		else
-		{
-			m_bDoing = FALSE;
-			m_btnRun.SetWindowTextW(_T("만들기"));
-			m_editWord.SetWindowTextW(m_strMyWord);
-			if (m_nTimerWord)
-			{
-				KillTimer(m_nTimerWord);
-			}
-		}
-	}			
+	}
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Expectedwork()
@@ -661,7 +615,6 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		if (strFilename.CompareNoCase(STR_WORDSET_FILENAME) == 0)
 		{
 			m_stWordsetPath.SetWindowTextW(szPathname);
-			m_ckWordset.ShowWindow(TRUE);
 		}
 		else
 		{
@@ -718,5 +671,23 @@ void CAwordnoiserDlg::LoadBadwords(CStringList strBadList)
 	if (pf.Open(m_strTextPath, CFile::modeReadWrite | CFile::shareDenyNone) == FALSE)
 	{
 
+	}
+}
+
+void CAwordnoiserDlg::OnBnClickedBtnExsentence()
+{	
+	CString strFile = _T("");
+	m_stWordsetPath.GetWindowTextW(strFile);
+
+	if (_taccess(strFile, 0) == -1)
+	{
+		AfxMessageBox(_T("No file"));
+	}
+	else
+	{
+		// 메모장에서 읽은 문장을 리스트에 넣기. 
+		// 원본 캡처 후 저장, 그리고
+		// 형용사를 변형된 욕설로 교체
+		// 변형 문장 캡처 후 저장. 
 	}
 }

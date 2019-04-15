@@ -53,7 +53,8 @@ private:
 	void ClearContorl();
 	void SetDlgControlIndex();
 	void SetEditcontrolText(CString strText);
-	void CheckDirectory(CString strPath, CString strFolder);
+	BOOL MakeDataDirectory(CString strMyPath, CString strType, CString strWord);
+	BOOL CheckDirectory(CString strPath, CString strWord);
 	void SaveTextFile();
 	void LoadBadwords(CStringList strBadList);
 
@@ -70,21 +71,16 @@ protected:
 	
 private:
 	CEdit m_editWord;
-	CEdit m_editFilter;
 	CStatic m_stCount;
 	CStatic m_stIndex;
 	CStatic m_stWordsetPath;
 	CProgressCtrl m_progress;
-	CButton m_ckop1;
-	CButton m_ckop2;
-	CButton m_ckop3;
-	CButton m_ckop4;
-	CButton m_ckop5;
 	CButton m_btnRun;
-	CButton m_ckWordset;
 
 	afx_msg void OnBnClickedButton_Run();
 	afx_msg void OnBnClickedButton_Expectedwork();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);	
 	afx_msg void OnDropFiles(HDROP hDropInfo);	
+public:
+	afx_msg void OnBnClickedBtnExsentence();
 };

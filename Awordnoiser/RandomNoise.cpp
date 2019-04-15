@@ -31,14 +31,17 @@ BOOL CRandomNoise::GetWordList(CString strWord, CStringList& retList)
 	GetChangespelling(strWord, retList);
 	if (retList.GetCount() < NUM_CNT_MAX / 100)
 	{
-		POSITION pos = retList.GetHeadPosition();
-		while (pos != retList.GetTailPosition())
+		CStringList strlAddChar;
+		AddSpecialChar(strWord, strlAddChar, TRUE);
+
+		POSITION pos = strlAddChar.GetHeadPosition();
+		while (pos != strlAddChar.GetTailPosition())
 		{
 			if (retList.GetCount() > NUM_CNT_MAX / 100)
 			{
 				break;
 			}
-			AddSpecialChar(retList.GetNext(pos), retList, TRUE);
+			GetChangespelling(strlAddChar.GetNext(pos), retList);
 		}
 	}
 
@@ -389,23 +392,6 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bA
 			cout << "단어 생성중...#AddSpecialChar2-2" << endl;
 			mySet.insert(myList.GetNext(pos));
 		}
-		/*myList.RemoveAll();
-		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
-		{
-			if (myList.GetCount() > NUM_CNT_MAX/10)
-			{
-				break;
-			}
-			CString strText = *it; 
-			RunAddingSpecial(strText, myList);
-		}
-
-		pos = myList.GetHeadPosition();
-		while (pos != myList.GetTailPosition())
-		{
-			cout << "단어 생성중...#AddSpecialChar2" << endl;
-			mySet.insert(myList.GetNext(pos));
-		}*/
 	}
 
 	if ((bAddTwoChar == FALSE) && (mySet.size() < NUM_CNT_MAX/2))
@@ -457,23 +443,6 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bA
 			cout << "단어 생성중...#AddSpecialChar3-3" << endl;
 			mySet.insert(myList.GetNext(pos));
 		}
-		/*myList.RemoveAll();
-		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
-		{
-			if (myList.GetCount() > NUM_CNT_MAX / 10)
-			{
-				break;
-			}
-			CString strText = *it;
-			RunAddingSpecial(strText, myList);
-		}
-
-		pos = myList.GetHeadPosition();
-		while (pos != myList.GetTailPosition())
-		{
-			cout << "단어 생성중...#AddSpecialChar3" << endl;
-			mySet.insert(myList.GetNext(pos));
-		}*/
 	}	
 
 	if ((bAddTwoChar == FALSE) && (mySet.size() < NUM_CNT_MAX / 2))
@@ -543,24 +512,7 @@ BOOL CRandomNoise::AddSpecialChar(CString strWord, CStringList& retList, BOOL bA
 		{
 			cout << "단어 생성중...#AddSpecialChar4-4" << endl;
 			mySet.insert(myList.GetNext(pos));
-		}
-		/*myList.RemoveAll();
-		for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
-		{
-			if (myList.GetCount() > NUM_CNT_MAX / 10)
-			{
-				break;
-			}
-			CString strText = *it;
-			RunAddingSpecial(strText, myList);
-		}
-
-		pos = myList.GetHeadPosition();
-		while (pos != myList.GetTailPosition())
-		{
-			cout << "단어 생성중...#AddSpecialChar4" << endl;
-			mySet.insert(myList.GetNext(pos));
-		}*/
+		}	
 	}
 
 	for (set<CString>::iterator it = mySet.begin(); it != mySet.end(); ++it)
