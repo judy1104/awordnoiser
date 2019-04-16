@@ -42,7 +42,8 @@
 #define ISNOTNORMAL				(-1)
 #define NUM_SIZE_WIDTH			160
 #define NUM_SIZE_HEIGHT			20
-#define STR_WORDSET_FILENAME	_T("ExSentence.txt")
+#define STR_SENTENCE_FILE		_T("exSentence.txt")
+#define STR_WORD_FILE			_T("wordnoiser.txt")
 #define STR_WORDSET_FOLDER		_T("wordset")
 
 

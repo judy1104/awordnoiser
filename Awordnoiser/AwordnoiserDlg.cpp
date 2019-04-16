@@ -67,10 +67,14 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT1, m_editWord);
 	DDX_Control(pDX, IDC_PROGRESS1, m_progress);
 	DDX_Control(pDX, IDC_BUTTON1, m_btnRun);
-	DDX_Control(pDX, IDC_ST_COUNT, m_stCount);
 	DDX_Control(pDX, IDC_ST_INDEX, m_stIndex);
 	DDX_Control(pDX, IDC_ST_WORDSET_PATH, m_stSentencePath);
 	DDX_Control(pDX, IDC_ST_WORDSET_PATH0, m_stWordPath);
+	DDX_Control(pDX, IDC_EDIT2, m_editWord2);
+	DDX_Control(pDX, IDC_PROGRESS2, m_progress2);
+	DDX_Control(pDX, IDC_PROGRESS3, m_progress3);
+	DDX_Control(pDX, IDC_BUTTON2, m_btnRun2);
+	DDX_Control(pDX, IDC_ST_INDEX2, m_stIndex2);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -194,9 +198,9 @@ CString CAwordnoiserDlg::GetCurretDirectory()
 	return strPath;
 }
 
-void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
+void CAwordnoiserDlg::CaptureEditcontrol(int nEditId, CString strPath, CString strFolder, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
 {
-	CWnd*  myWnd = this->GetDlgItem(IDC_EDIT1);
+	CWnd*  myWnd = this->GetDlgItem(nEditId);
 	CClientDC ScreenDC(myWnd);
 	HDC h_screen_dc = ScreenDC;
 
@@ -244,6 +248,25 @@ void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int
 
 	// 이미지 파일 생성
 	CString strFilename = _T("");
+	CString strOcrFilename = _T("");
+
+	if (m_nfile < m_nOldCount + 40)
+	{
+		strOcrFilename.Format(_T("%s\\%s_%d.jpg"), m_strOCRPath, strFolder, m_nfile);
+
+		int length = strOcrFilename.GetLength();
+		char* st = new char[length];
+		strcpy(st, (CT2A)strOcrFilename);
+
+		FILE *p_file = fopen(st, "wb");
+		if (p_file != NULL)
+		{
+			fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);
+			fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);
+			fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
+			fclose(p_file);
+		}
+	}
 
 	if (m_nfile % 5 == 3)
 	{
@@ -263,7 +286,8 @@ void CAwordnoiserDlg::CaptureEditcontrol(CString strPath, CString strFolder, int
 	strcpy(st, (CT2A)strFilename);
 
 	FILE *p_file = fopen(st, "wb");
-	if (p_file != NULL) {
+	if (p_file != NULL) 
+	{
 		fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);
 		fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);
 		fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
@@ -432,31 +456,29 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, i
 	return bResult; 
 }
 
-void CAwordnoiserDlg::ClearContorl()
+void CAwordnoiserDlg::ClearContorl(CEdit& editId, CButton& btnId, CProgressCtrl& progressId)
 {	
-	m_progress.SetPos(m_strWordlist.GetCount());
+	progressId.SetPos(m_strWordlist.GetCount());
 
-	m_btnRun.SetWindowTextW(_T("만들기"));
-	m_editWord.SetWindowTextW(m_strMyWord);
-	m_progress.SetPos(0);
-	//m_stIndex.SetWindowTextW(_T(""));
-	//m_stCount.SetWindowTextW(_T(""));
+	btnId.SetWindowTextW(_T("만들기"));
+	editId.SetWindowTextW(m_strMyWord);
+	progressId.SetPos(0);
 }
 
-void CAwordnoiserDlg::SetDlgControlIndex()
+void CAwordnoiserDlg::SetDlgControlIndex(CProgressCtrl& progress, CStatic& stCount)
 {
-	m_progress.SetPos(m_nfile);
+	progress.SetPos(m_nfile);
 
 	CString strMsg = _T("");
 	strMsg.Format(_T("%d/"), m_nfile);
-	m_stIndex.SetWindowTextW(strMsg);
+	stCount.SetWindowTextW(strMsg);
 
 }
 
-void CAwordnoiserDlg::SetEditcontrolText(CString strText)
+void CAwordnoiserDlg::SetEditcontrolText(CEdit& eidtId, CString strText)
 {
-	m_editWord.SetWindowText(_T(""));
-	m_editWord.SetWindowText(strText);
+	eidtId.SetWindowText(_T(""));
+	eidtId.SetWindowText(strText);
 }
 
 BOOL CAwordnoiserDlg::MakeDataDirectory(CString strMyPath, CString strType, CString strWord)
@@ -542,52 +564,87 @@ BOOL CAwordnoiserDlg::CheckDirectory(CString strPath, CString strWord)
 	{
 		bResult = FALSE;
 	}
+
+	if (MakeDataDirectory(strPath, _T("OCR"), strWord) == TRUE)
+	{
+		CString strFolderPath = _T("");
+		strFolderPath.Format(_T("%s\\OCR\\%s"), strPath, strWord);
+		m_strOCRPath = strFolderPath;
+	}
+	else
+	{
+		bResult = FALSE;
+	}
 	
 	return bResult; 
+}
+
+int CAwordnoiserDlg::GetFindCharCount(CString parm_string, char parm_find_char)
+{
+	// 함수 출처 : https://m.blog.naver.com/PostView.nhn?blogId=yagyu82&logNo=95519861&proxyReferer=https%3A%2F%2Fwww.google.com%2F
+	int length = parm_string.GetLength(), find_count = 0;
+
+	for (int i = 0; i < length; i++)
+	{
+		if (parm_string[i] == parm_find_char)
+		{
+			find_count++;
+		}
+	}
+
+	return find_count;
+}
+
+BOOL CAwordnoiserDlg::CreateNoiseWord(CEdit& editId, CButton& btnId, CProgressCtrl& progressId, int nTimerId, int nTimerPtr)
+{
+	BOOL	bResult = TRUE;
+	CString		strWord = _T("");
+	editId.GetWindowTextW(strWord);
+
+	if (strWord.IsEmpty() == TRUE)
+	{
+		AfxMessageBox(_T("IsEmpty error"));
+		return FALSE;
+	}
+
+	if (CheckDirectory(m_strMyDirectory, strWord) == FALSE)
+	{
+		AfxMessageBox(_T("CheckDirectory error"));
+		return FALSE;
+	}
+
+	if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
+	{
+		if (m_strWordlist.IsEmpty() == TRUE)
+		{
+			AfxMessageBox(_T("wordlist is empty"));
+			return FALSE;
+		}
+		else
+		{
+			progressId.SetRange(0, MIN_FILE_COUNT);
+			progressId.SetPos(0);
+
+			m_posWord = m_strWordlist.GetHeadPosition();
+			nTimerPtr = SetTimer(nTimerId, 100, 0);
+
+			m_bDoing = TRUE;
+			btnId.SetWindowTextW(_T("중지"));
+		}
+	}
+	else
+	{
+		AfxMessageBox(_T("RunWordnoiser failed"));
+		return FALSE;
+	}
+
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
 {
 	if (m_bDoing == FALSE)
 	{
-		CString		strWord = _T("");
-		//CString		strwordDir = _T("");
-
-		m_editWord.GetWindowTextW(strWord);
-		if (strWord.IsEmpty() == TRUE)
-		{
-			AfxMessageBox(_T("IsEmpty error"));
-			return;
-		}
-		
-		if (CheckDirectory(m_strMyDirectory, strWord) == FALSE)
-		{
-			AfxMessageBox(_T("CheckDirectory error"));
-			return;
-		}
-
-		if (RunWordnoiser(strWord, m_strWordlist) == TRUE)
-		{
-			if (m_strWordlist.IsEmpty() == TRUE)
-			{
-				AfxMessageBox(_T("wordlist is empty"));
-			}
-			else
-			{
-				m_progress.SetRange(0, MIN_FILE_COUNT);
-				m_progress.SetPos(0);
-
-				m_posWord = m_strWordlist.GetHeadPosition();
-				m_nTimerWord = SetTimer(1, 100, 0);
-
-				m_bDoing = TRUE;
-				m_btnRun.SetWindowTextW(_T("중지"));
-			}
-		}
-		else
-		{
-			AfxMessageBox(_T("RunWordnoiser failed"));
-		}
+		CreateNoiseWord(m_editWord, m_btnRun, m_progress, 1, m_nTimerWord);
 	}
 	else
 	{
@@ -601,8 +658,11 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 	}
 }
 
+CCriticalSection g_cs;
+
 void CAwordnoiserDlg::OnBnClickedButton2()
 {
+	CStringList strlWord;
 	CString strFile = _T("");
 	m_stWordPath.GetWindowTextW(strFile);
 
@@ -612,8 +672,55 @@ void CAwordnoiserDlg::OnBnClickedButton2()
 	}
 	else
 	{
-		// 파일읽기,
-		// 단어 리스트 만들기.
+		if (_taccess(strFile, 0) == -1)
+		{
+			AfxMessageBox(_T("NO ACCESS"));
+		}
+		else
+		{
+			CFile cfile;
+			if (cfile.Open(strFile, CFile::modeRead | CFile::shareDenyNone) == TRUE)
+			{
+				char pbufRead[1024] = {0, };
+				cfile.Read(pbufRead, sizeof(pbufRead));
+
+				CString strReadMsg = _T("");
+				strReadMsg = pbufRead;
+
+				int nCntWord = GetFindCharCount(strReadMsg, '|');
+
+
+				for (int i = 0; i <= nCntWord; ++i)
+				{
+					CString strText = _T("");
+					AfxExtractSubString(strText, strReadMsg, i, '|');
+					strlWord.AddTail(strText);
+				}
+			}			
+		}
+	}
+
+	if (strlWord.IsEmpty() == FALSE)
+	{
+		POSITION pos = strlWord.GetHeadPosition();
+
+		while (pos != strlWord.GetTailPosition())
+		{			
+			CString strText = strlWord.GetNext(pos);
+
+			if (strText.IsEmpty() == FALSE)
+			{				
+				m_editWord2.SetWindowTextW(strText);
+				CreateNoiseWord(m_editWord2, m_btnRun2, m_progress2, 2, m_nTimerWord2);
+
+				g_cs.Lock();
+
+				if (m_bSuccess == TRUE)
+				{
+					g_cs.Unlock();
+				}
+			}
+		}
 	}
 }
 
@@ -622,18 +729,20 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == 1)
 	{		
 		KillTimer(m_nTimerWord);
-		SetEditcontrolText(m_strWordlist.GetNext(m_posWord));
-		SaveTextFile();
-		CaptureEditcontrol(m_strMyDirectory, m_strMyWord);	
-		SetDlgControlIndex();
+		SetEditcontrolText(m_editWord, m_strWordlist.GetNext(m_posWord));
+		SaveTextFile(m_editWord);
+		CaptureEditcontrol(IDC_EDIT1, m_strMyDirectory, m_strMyWord);
+		SetDlgControlIndex(m_progress, m_stIndex);
 				
 		if ((m_strWordlist.IsEmpty() == TRUE)||(m_posWord == m_strWordlist.GetTailPosition()))
 		{
 			m_nTimerWord = NULL;
-			ClearContorl();
+			m_nOldCount = 0;
+			ClearContorl(m_editWord, m_btnRun, m_progress);
 
 			if (m_nfile < MIN_FILE_COUNT)
 			{
+				m_nOldCount = m_nfile;
 				m_strWordlist.RemoveAll();
 				RunWordnoiser(m_strMyWord, m_strWordlist);
 				m_posWord = m_strWordlist.GetHeadPosition();
@@ -647,15 +756,34 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 	else if (nIDEvent == 2)
 	{
-		SetEditcontrolText(m_strBowlist.GetNext(m_posBowset));
-		CaptureEditcontrol(m_strMyDirectory, STR_WORDSET_FOLDER);
+		KillTimer(m_nTimerWord2);
+		SetEditcontrolText(m_editWord2, m_strWordlist.GetNext(m_posWord));
+		SaveTextFile(m_editWord2);
+		CaptureEditcontrol(IDC_EDIT2, m_strMyDirectory, m_strMyWord);
+		SetDlgControlIndex(m_progress2, m_stIndex2);
 
-		if ((m_strBowlist.IsEmpty() == TRUE) || (m_posBowset == m_strBowlist.GetTailPosition()))
+		if ((m_strWordlist.IsEmpty() == TRUE) || (m_posWord == m_strWordlist.GetTailPosition()))
 		{
-			KillTimer(m_nTimerBow);
-			m_nTimerBow = NULL;
-			m_strTextPath = _T("");
-			ClearContorl();
+			m_nTimerWord2 = NULL;
+			m_nOldCount = 0;
+			ClearContorl(m_editWord2, m_btnRun2, m_progress2);
+
+			if (m_nfile < 100)
+			{
+				m_nOldCount = m_nfile;
+				m_strWordlist.RemoveAll();
+				RunWordnoiser(m_strMyWord, m_strWordlist);
+				m_posWord = m_strWordlist.GetHeadPosition();
+				m_nTimerWord2 = SetTimer(2, 100, 0);
+			}
+			else
+			{
+				m_bSuccess = TRUE;
+			}
+		}
+		else
+		{
+			m_nTimerWord2 = SetTimer(2, 100, 0);
 		}
 	}
 	CDialogEx::OnTimer(nIDEvent);
@@ -680,9 +808,13 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		::DragQueryFile(hDropInfo, 0, szPathname, MAX_PATH);
 		TCHAR* szFilename = _tcsrchr(szPathname, _T('\\')) + 1;
 		strFilename = szFilename;
-		if (strFilename.CompareNoCase(STR_WORDSET_FILENAME) == 0)
+		if (strFilename.CompareNoCase(STR_SENTENCE_FILE) == 0)
 		{
 			m_stSentencePath.SetWindowTextW(szPathname);
+		}
+		else if (strFilename.CompareNoCase(STR_WORD_FILE) == 0)
+		{
+			m_stWordPath.SetWindowTextW(szPathname);
 		}
 		else
 		{
@@ -695,11 +827,11 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 	CDialogEx::OnDropFiles(hDropInfo);
 }
 
-void CAwordnoiserDlg::SaveTextFile()
+void CAwordnoiserDlg::SaveTextFile(CEdit& editId)
 {
 	CString strText = _T("");
 	CString strText2 = _T("");
-	m_editWord.GetWindowTextW(strText);
+	editId.GetWindowTextW(strText);
 
 	strText2.Format(_T("%s\r\n"), strText);
 	
