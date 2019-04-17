@@ -34,17 +34,19 @@
 
 #include <afxcontrolbars.h>     // MFC의 리본 및 컨트롤 막대 지원
 
-#define TYPE_DATA_TRAIN			0
-#define TYPE_DATA_TEST			1
-#define TYPE_DATA_VALIDATION	2
+#define TYPE_DATA_TRAIN				0
+#define TYPE_DATA_TEST				1
+#define TYPE_DATA_VALIDATION		2
 
-#define SIZE_DEFAUTL			1024
-#define ISNOTNORMAL				(-1)
-#define NUM_SIZE_WIDTH			160
-#define NUM_SIZE_HEIGHT			20
-#define STR_SENTENCE_FILE		_T("exSentence.txt")
-#define STR_WORD_FILE			_T("wordnoiser.txt")
-#define STR_WORDSET_FOLDER		_T("wordset")
+#define SIZE_DEFAUTL				1024
+#define ISNOTNORMAL					(-1)
+#define NUM_SIZE_WIDTH				160
+#define NUM_SIZE_WIDTH_SENTENCE		260
+#define NUM_SIZE_HEIGHT				20
+#define NUM_SIZE_HEIGHT_SENTENCE	50
+#define STR_SENTENCE_FILE			_T("exSentence.txt")
+#define STR_WORD_FILE				_T("wordnoiser.txt")
+#define STR_WORDSET_FOLDER			_T("wordset")
 
 
 #ifdef _UNICODE

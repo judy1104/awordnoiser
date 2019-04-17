@@ -28,12 +28,13 @@ private:
 	int		m_nCntSentence = 0;
 	int		m_nTimerWord;
 	int		m_nTimerWord2;
-	int		m_nTimerBow;
+	int		m_nTimerSentence; 
 
 	BOOL	m_bDoing = FALSE; 
 	BOOL	m_bSuccess = FALSE; 
 
 	CString m_strMyDirectory = _T("");
+	CString m_strDirSentence = _T("");
 	CString m_strMyWord = _T("");
 
 	CString m_strTrainPath = _T("");
@@ -45,14 +46,16 @@ private:
 
 	CStringList	m_strWordlist; 
 	CStringList m_strBowlist; 
+	CStringList m_strlSentence; 
 
 	POSITION m_posWord; 
 	POSITION m_posBowset;
+	POSITION m_posSentence;
 
 private:
 	CString GetCurretDirectory();
 	void CaptureEditcontrol(int nEditId, CString strPath, CString strFolder, int nWidth = NUM_SIZE_WIDTH, int nHeight = NUM_SIZE_HEIGHT);
-	void CaptureEditcontrol_Sentence(CString strPath, CString strName= _T("sentence"), int nWidth = NUM_SIZE_WIDTH, int nHeight = 100);
+	void CaptureEditcontrol_Sentence(CString strPath, CString strName= _T("sentence"), int nWidth = NUM_SIZE_WIDTH_SENTENCE, int nHeight = NUM_SIZE_HEIGHT_SENTENCE);
 	CString GetWord(CString strMsg);
 	BOOL ReadWordsetfile(CStringList& strlBOWA, CString strPath);
 	BOOL RunWordnoiser(CString strWord, CStringList& strWordlist, int nFilter=10);
@@ -60,7 +63,7 @@ private:
 	void SetDlgControlIndex(CProgressCtrl& progress, CStatic& stCount);
 	void SetEditcontrolText(CEdit& eidtId, CString strText);
 	BOOL MakeDataDirectory(CString strMyPath, CString strType, CString strWord);
-	BOOL CheckDirectory(CString strPath, CString strWord);
+	BOOL CheckDirectory(CString strPath, CString strType, CString strWord, CString& strFullPath);
 	int GetFindCharCount(CString parm_string, char parm_find_char);
 	BOOL CreateNoiseWord(CEdit& editId, CButton& btnId, CProgressCtrl& progressId, int nTimerId, int nTimerPtr);
 	void SaveTextFile(CEdit& editId);
@@ -80,7 +83,9 @@ protected:
 private:
 	CEdit m_editWord;
 	CEdit m_editWord2;
+	CEdit m_edit3;
 	CStatic m_stIndex;
+	CStatic m_stIndex2;
 	CStatic m_stWordPath;
 	CStatic m_stSentencePath;
 	CProgressCtrl m_progress;
@@ -94,7 +99,5 @@ private:
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);	
 	afx_msg void OnDropFiles(HDROP hDropInfo);	
-		
-public:
-	CStatic m_stIndex2;
+
 };

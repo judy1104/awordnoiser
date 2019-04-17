@@ -75,6 +75,7 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PROGRESS3, m_progress3);
 	DDX_Control(pDX, IDC_BUTTON2, m_btnRun2);
 	DDX_Control(pDX, IDC_ST_INDEX2, m_stIndex2);
+	DDX_Control(pDX, IDC_EDIT3, m_edit3);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -299,7 +300,6 @@ void CAwordnoiserDlg::CaptureEditcontrol(int nEditId, CString strPath, CString s
 	if (NULL != h_bitmap) DeleteObject(h_bitmap);
 	if (NULL != h_screen_dc) ::ReleaseDC(NULL, h_screen_dc);
 }
-
 
 void CAwordnoiserDlg::CaptureEditcontrol_Sentence(CString strPath, CString strName /*= _T("sentence")*/, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
 {
@@ -528,54 +528,21 @@ BOOL CAwordnoiserDlg::MakeDataDirectory(CString strMyPath, CString strType, CStr
 	return bResult; 	
 }
 
-BOOL CAwordnoiserDlg::CheckDirectory(CString strPath, CString strWord)
+BOOL CAwordnoiserDlg::CheckDirectory(CString strPath, CString strType, CString strWord, CString& strFullPath)
 {
 	BOOL bResult = TRUE; 
 
-	if (MakeDataDirectory(strPath, _T("train"), strWord) == TRUE)
+	if (MakeDataDirectory(strPath, strType, strWord) == TRUE)
 	{
 		CString strFolderPath = _T("");
-		strFolderPath.Format(_T("%s\\train\\%s"), strPath, strWord);
-		m_strTrainPath = strFolderPath;
+		strFolderPath.Format(_T("%s\\%s\\%s"), strPath, strType, strWord);
+		strFullPath = strFolderPath;
 	}
 	else
 	{
 		bResult = FALSE; 
 	}
 
-	if (MakeDataDirectory(strPath, _T("test"), strWord) == TRUE)
-	{
-		CString strFolderPath = _T("");
-		strFolderPath.Format(_T("%s\\test\\%s"), strPath, strWord);
-		m_strTestPath = strFolderPath;
-	}
-	else
-	{
-		bResult = FALSE;
-	}
-
-	if (MakeDataDirectory(strPath, _T("validation"), strWord) == TRUE)
-	{
-		CString strFolderPath = _T("");
-		strFolderPath.Format(_T("%s\\validation\\%s"), strPath, strWord);
-		m_strValidationPath = strFolderPath;
-	}	
-	else
-	{
-		bResult = FALSE;
-	}
-
-	if (MakeDataDirectory(strPath, _T("OCR"), strWord) == TRUE)
-	{
-		CString strFolderPath = _T("");
-		strFolderPath.Format(_T("%s\\OCR\\%s"), strPath, strWord);
-		m_strOCRPath = strFolderPath;
-	}
-	else
-	{
-		bResult = FALSE;
-	}
-	
 	return bResult; 
 }
 
@@ -607,9 +574,27 @@ BOOL CAwordnoiserDlg::CreateNoiseWord(CEdit& editId, CButton& btnId, CProgressCt
 		return FALSE;
 	}
 
-	if (CheckDirectory(m_strMyDirectory, strWord) == FALSE)
+	if (CheckDirectory(m_strMyDirectory, _T("train"), strWord, m_strTrainPath) == FALSE)
 	{
-		AfxMessageBox(_T("CheckDirectory error"));
+		AfxMessageBox(_T("CheckDirectory train error"));
+		return FALSE;
+	}
+
+	if (CheckDirectory(m_strMyDirectory, _T("test"), strWord, m_strTestPath) == FALSE)
+	{
+		AfxMessageBox(_T("CheckDirectory test error"));
+		return FALSE;
+	}
+
+	if (CheckDirectory(m_strMyDirectory, _T("validation"), strWord, m_strValidationPath) == FALSE)
+	{
+		AfxMessageBox(_T("CheckDirectory validation error"));
+		return FALSE;
+	}
+
+	if (CheckDirectory(m_strMyDirectory, _T("ocr"), strWord, m_strOCRPath) == FALSE)
+	{
+		AfxMessageBox(_T("CheckDirectory ocr error"));
 		return FALSE;
 	}
 
@@ -637,7 +622,6 @@ BOOL CAwordnoiserDlg::CreateNoiseWord(CEdit& editId, CButton& btnId, CProgressCt
 		AfxMessageBox(_T("RunWordnoiser failed"));
 		return FALSE;
 	}
-
 }
 
 void CAwordnoiserDlg::OnBnClickedButton_Run()
@@ -786,9 +770,21 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nTimerWord2 = SetTimer(2, 100, 0);
 		}
 	}
+	else if (nIDEvent == 3)
+	{
+		KillTimer(m_nTimerSentence);		
+		CaptureEditcontrol_Sentence(m_strDirSentence);
+		
+		if (m_posSentence != m_strlSentence.GetTailPosition())
+		{
+			CString strText = m_strlSentence.GetNext(m_posSentence);
+			SetEditcontrolText(m_edit3, strText);
+			m_nTimerSentence = SetTimer(3, 100, 0);
+		}
+	}
+
 	CDialogEx::OnTimer(nIDEvent);
 }
-
 
 void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 {
@@ -885,7 +881,40 @@ void CAwordnoiserDlg::OnBnClickedButton3()
 	}
 	else
 	{
-		
+		CFile cfile;
+		if (cfile.Open(strFile, CFile::modeRead | CFile::shareDenyNone) == TRUE)
+		{
+			char pbufRead[1024] = { 0, };
+			cfile.Read(pbufRead, sizeof(pbufRead));
+
+			CString strReadMsg = _T("");
+			strReadMsg = pbufRead;
+
+			int nCntWord = GetFindCharCount(strReadMsg, '.');
+
+
+			for (int i = 0; i <= nCntWord; ++i)
+			{
+				CString strText = _T("");
+				AfxExtractSubString(strText, strReadMsg, i, '.');
+				strText.Replace(_T("\r\n"), _T(""));
+				strText.TrimLeft(_T(" "));
+				m_strlSentence.AddTail(strText);
+			}
+		}
+	}
+
+	if (m_strlSentence.IsEmpty() == FALSE)
+	{
+
+		if (CheckDirectory(m_strMyDirectory, _T("sentence"), _T("none"), m_strDirSentence) == FALSE)
+		{
+			AfxMessageBox(_T("CheckDirectory ocr error"));
+		}
+
+		m_posSentence = m_strlSentence.GetHeadPosition();
+		SetEditcontrolText(m_edit3, m_strlSentence.GetNext(m_posSentence));
+		m_nTimerSentence = SetTimer(3, 100, 0);
 	}
 
 	// 메모장에서 읽은 문장을 리스트에 넣기. 
