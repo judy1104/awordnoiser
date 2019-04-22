@@ -93,6 +93,7 @@ private:
 	CProgressCtrl m_progress;
 	CProgressCtrl m_progress2;
 	CProgressCtrl m_progress3;
+	CButton m_checkLng;
 	CButton m_btnRun;
 	CButton m_btnRun2;
 

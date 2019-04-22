@@ -7,8 +7,8 @@
 #include "AwordnoiserDlg.h"
 #include "afxdialogex.h"
 
-//#include "noise.h"
 #include "RandomNoise.h"
+#include "NoiseKor.h"
 
 #define	MIN_FILE_COUNT		10000
 
@@ -76,6 +76,7 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON2, m_btnRun2);
 	DDX_Control(pDX, IDC_ST_INDEX2, m_stIndex2);
 	DDX_Control(pDX, IDC_EDIT3, m_edit3);
+	DDX_Control(pDX, IDC_CHECK_LANG, m_checkLng);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -202,10 +203,15 @@ CString CAwordnoiserDlg::GetCurretDirectory()
 
 void CAwordnoiserDlg::CaptureEditcontrol(int nEditId, CString strPath, CString strFolder, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
 {
+	if (m_checkLng.GetCheck() == TRUE)
+	{
+		nHeight = nHeight * 2;
+	}
+
 	CWnd*  myWnd = this->GetDlgItem(nEditId);
 	CClientDC ScreenDC(myWnd);
 	HDC h_screen_dc = ScreenDC;
-
+	
 	// DIB형식 정의
 	BITMAPINFO dib_define;
 	dib_define.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -442,15 +448,20 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, i
 
 	strWordlist.RemoveAll();
 
-	//CNoise Noiser(strWord, nFilter, m_ckop1.GetCheck(), m_ckop2.GetCheck(), m_ckop3.GetCheck(), m_ckop4.GetCheck(), m_ckop5.GetCheck());
-	//Noiser.GetWordList(strWordlist);
-
-	CRandomNoise Noiser;
-	Noiser.GetWordList(strWord, m_strWordlist);
+	if (m_checkLng.GetCheck() == TRUE)
+	{
+		CNoiseKor KorNoiser;
+		KorNoiser.GetWordList(strWord, m_strWordlist);
+	}
+	else
+	{
+		CRandomNoise Noiser;
+		Noiser.GetWordList(strWord, m_strWordlist);	
+	}
 
 	if (strWordlist.IsEmpty() == FALSE)
 	{
-		m_strMyWord = strWord; 
+		m_strMyWord = strWord;
 		bResult = TRUE;
 	}
 
@@ -644,8 +655,6 @@ void CAwordnoiserDlg::OnBnClickedButton_Run()
 	}
 }
 
-CCriticalSection g_cs;
-
 void CAwordnoiserDlg::OnBnClickedButton2()
 {
 	CString strFile = _T("");
@@ -673,8 +682,7 @@ void CAwordnoiserDlg::OnBnClickedButton2()
 				strReadMsg = pbufRead;
 
 				int nCntWord = GetFindCharCount(strReadMsg, '|');
-
-
+				
 				for (int i = 0; i <= nCntWord; ++i)
 				{
 					CString strText = _T("");
@@ -689,23 +697,6 @@ void CAwordnoiserDlg::OnBnClickedButton2()
 	{
 		m_posBigWord = m_strBigWordlist.GetHeadPosition();
 		PostMessage(WM_MSG_WORDLIST, NULL, NULL);
-		/*while (pos != strlWord.GetTailPosition())
-		{			
-			CString strText = strlWord.GetNext(pos);
-
-			if (strText.IsEmpty() == FALSE)
-			{				
-				m_editWord2.SetWindowTextW(strText);
-				CreateNoiseWord(m_editWord2, m_btnRun2, m_progress2, 2, m_nTimerWord2);
-
-				g_cs.Lock();
-
-				if (m_bSuccess == TRUE)
-				{
-					g_cs.Unlock();
-				}
-			}
-		}*/
 	}
 }
 
@@ -765,22 +756,44 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nOldCount = 0;
 			ClearContorl(m_editWord2, m_btnRun2, m_progress2);
 
-			if (m_nfile < MIN_FILE_COUNT)
+			if (m_checkLng.GetCheck() == TRUE)
 			{
-				m_nOldCount = m_nfile;
-				m_strWordlist.RemoveAll();
-				RunWordnoiser(m_strMyWord, m_strWordlist);
-				m_posWord = m_strWordlist.GetHeadPosition();
-				m_nTimerWord2 = SetTimer(2, 100, 0);
+				if (m_nfile < 300)
+				{
+					m_nOldCount = m_nfile;
+					m_strWordlist.RemoveAll();
+					RunWordnoiser(m_strMyWord, m_strWordlist);
+					m_posWord = m_strWordlist.GetHeadPosition();
+					m_nTimerWord2 = SetTimer(2, 100, 0);
+				}
+				else
+				{
+					if (m_posBigWord != NULL)
+					{
+						m_nfile = 0;
+						PostMessage(WM_MSG_WORDLIST, NULL, NULL);
+					}
+				}
 			}
 			else
 			{
-				if (m_posBigWord != NULL)
+				if (m_nfile < MIN_FILE_COUNT)
 				{
-					m_nfile = 0;
-					PostMessage(WM_MSG_WORDLIST, NULL, NULL);
+					m_nOldCount = m_nfile;
+					m_strWordlist.RemoveAll();
+					RunWordnoiser(m_strMyWord, m_strWordlist);
+					m_posWord = m_strWordlist.GetHeadPosition();
+					m_nTimerWord2 = SetTimer(2, 100, 0);
 				}
-			}
+				else
+				{
+					if (m_posBigWord != NULL)
+					{
+						m_nfile = 0;
+						PostMessage(WM_MSG_WORDLIST, NULL, NULL);
+					}
+				}
+			}			
 		}
 		else
 		{
@@ -825,9 +838,17 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		{
 			m_stSentencePath.SetWindowTextW(szPathname);
 		}
-		else if ((strFilename.CompareNoCase(STR_WORD_FILE) == 0) || (strFilename.CompareNoCase(_T("test.txt")) == 0))
+		else if (
+			(strFilename.CompareNoCase(STR_WORD_FILE) == 0) || 
+			(strFilename.CompareNoCase(STR_WORD_FILE_KOR) == 0) || 
+			(strFilename.CompareNoCase(_T("test.txt")) == 0))
 		{
 			m_stWordPath.SetWindowTextW(szPathname);
+
+			if (strFilename.CompareNoCase(STR_WORD_FILE_KOR) == 0)
+			{
+				m_checkLng.SetCheck(TRUE);
+			}
 		}
 		else
 		{

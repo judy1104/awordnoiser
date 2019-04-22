@@ -48,6 +48,7 @@
 #define NUM_SIZE_HEIGHT_SENTENCE	50
 #define STR_SENTENCE_FILE			_T("exSentence.txt")
 #define STR_WORD_FILE				_T("wordnoiser.txt")
+#define STR_WORD_FILE_KOR			_T("wordnoiser_kor.txt")
 #define STR_WORDSET_FOLDER			_T("wordset")
 
 
