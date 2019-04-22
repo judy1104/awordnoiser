@@ -188,6 +188,7 @@
     <ClInclude Include="Awordnoiser.h" />
     <ClInclude Include="AwordnoiserDlg.h" />
     <ClInclude Include="noise.h" />
+    <ClInclude Include="NoiseKor.h" />
     <ClInclude Include="RandomNoise.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -197,6 +198,7 @@
     <ClCompile Include="Awordnoiser.cpp" />
     <ClCompile Include="AwordnoiserDlg.cpp" />
     <ClCompile Include="noise.cpp" />
+    <ClCompile Include="NoiseKor.cpp" />
     <ClCompile Include="RandomNoise.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

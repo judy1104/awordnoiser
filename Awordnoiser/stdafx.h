@@ -34,6 +34,8 @@
 
 #include <afxcontrolbars.h>     // MFC의 리본 및 컨트롤 막대 지원
 
+#define WM_MSG_WORDLIST				(WM_USER+100)
+
 #define TYPE_DATA_TRAIN				0
 #define TYPE_DATA_TEST				1
 #define TYPE_DATA_VALIDATION		2

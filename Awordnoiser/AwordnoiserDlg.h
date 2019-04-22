@@ -45,10 +45,12 @@ private:
 	CString m_strTextPath = _T("");
 
 	CStringList	m_strWordlist; 
+	CStringList m_strBigWordlist; 
 	CStringList m_strBowlist; 
 	CStringList m_strlSentence; 
 
 	POSITION m_posWord; 
+	POSITION m_posBigWord;
 	POSITION m_posBowset;
 	POSITION m_posSentence;
 
@@ -66,7 +68,7 @@ private:
 	BOOL CheckDirectory(CString strPath, CString strType, CString strWord, CString& strFullPath);
 	int GetFindCharCount(CString parm_string, char parm_find_char);
 	BOOL CreateNoiseWord(CEdit& editId, CButton& btnId, CProgressCtrl& progressId, int nTimerId, int nTimerPtr);
-	void SaveTextFile(CEdit& editId);
+	void SaveTextFile(CEdit& editId, CString strWord);
 	void LoadBadwords(CStringList strBadList);
 
 // 구현입니다.
@@ -97,6 +99,7 @@ private:
 	afx_msg void OnBnClickedButton_Run();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
+	afx_msg LRESULT OnMakeBadWords(WPARAM wParm, LPARAM lParm);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);	
 	afx_msg void OnDropFiles(HDROP hDropInfo);	
 

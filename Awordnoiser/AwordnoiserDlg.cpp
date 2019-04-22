@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON3, &CAwordnoiserDlg::OnBnClickedButton3)
 	ON_WM_TIMER()
 	ON_WM_DROPFILES()
+	ON_MESSAGE(WM_MSG_WORDLIST, OnMakeBadWords)
 	
 END_MESSAGE_MAP()
 
@@ -458,6 +459,7 @@ BOOL CAwordnoiserDlg::RunWordnoiser(CString strWord, CStringList& strWordlist, i
 
 void CAwordnoiserDlg::ClearContorl(CEdit& editId, CButton& btnId, CProgressCtrl& progressId)
 {	
+	m_bDoing = FALSE;
 	progressId.SetPos(m_strWordlist.GetCount());
 
 	btnId.SetWindowTextW(_T("¸¸µé±â"));
@@ -564,7 +566,7 @@ int CAwordnoiserDlg::GetFindCharCount(CString parm_string, char parm_find_char)
 
 BOOL CAwordnoiserDlg::CreateNoiseWord(CEdit& editId, CButton& btnId, CProgressCtrl& progressId, int nTimerId, int nTimerPtr)
 {
-	BOOL	bResult = TRUE;
+	BOOL		bResult = TRUE;
 	CString		strWord = _T("");
 	editId.GetWindowTextW(strWord);
 
@@ -646,7 +648,6 @@ CCriticalSection g_cs;
 
 void CAwordnoiserDlg::OnBnClickedButton2()
 {
-	CStringList strlWord;
 	CString strFile = _T("");
 	m_stWordPath.GetWindowTextW(strFile);
 
@@ -678,17 +679,17 @@ void CAwordnoiserDlg::OnBnClickedButton2()
 				{
 					CString strText = _T("");
 					AfxExtractSubString(strText, strReadMsg, i, '|');
-					strlWord.AddTail(strText);
+					m_strBigWordlist.AddTail(strText);
 				}
 			}			
 		}
 	}
 
-	if (strlWord.IsEmpty() == FALSE)
+	if (m_strBigWordlist.IsEmpty() == FALSE)
 	{
-		POSITION pos = strlWord.GetHeadPosition();
-
-		while (pos != strlWord.GetTailPosition())
+		m_posBigWord = m_strBigWordlist.GetHeadPosition();
+		PostMessage(WM_MSG_WORDLIST, NULL, NULL);
+		/*while (pos != strlWord.GetTailPosition())
 		{			
 			CString strText = strlWord.GetNext(pos);
 
@@ -704,8 +705,20 @@ void CAwordnoiserDlg::OnBnClickedButton2()
 					g_cs.Unlock();
 				}
 			}
-		}
+		}*/
 	}
+}
+
+LRESULT CAwordnoiserDlg::OnMakeBadWords(WPARAM wParm, LPARAM lParm)
+{
+	CString	strWord = _T("");
+	
+	strWord = m_strBigWordlist.GetNext(m_posBigWord);
+
+	m_editWord2.SetWindowTextW(strWord);
+	CreateNoiseWord(m_editWord2, m_btnRun2, m_progress2, 2, m_nTimerWord2);
+
+	return 0; 
 }
 
 void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
@@ -714,7 +727,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 	{		
 		KillTimer(m_nTimerWord);
 		SetEditcontrolText(m_editWord, m_strWordlist.GetNext(m_posWord));
-		SaveTextFile(m_editWord);
+		SaveTextFile(m_editWord, m_strMyWord);
 		CaptureEditcontrol(IDC_EDIT1, m_strMyDirectory, m_strMyWord);
 		SetDlgControlIndex(m_progress, m_stIndex);
 				
@@ -742,7 +755,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 	{
 		KillTimer(m_nTimerWord2);
 		SetEditcontrolText(m_editWord2, m_strWordlist.GetNext(m_posWord));
-		SaveTextFile(m_editWord2);
+		SaveTextFile(m_editWord2, m_strMyWord);
 		CaptureEditcontrol(IDC_EDIT2, m_strMyDirectory, m_strMyWord);
 		SetDlgControlIndex(m_progress2, m_stIndex2);
 
@@ -752,7 +765,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nOldCount = 0;
 			ClearContorl(m_editWord2, m_btnRun2, m_progress2);
 
-			if (m_nfile < 100)
+			if (m_nfile < MIN_FILE_COUNT)
 			{
 				m_nOldCount = m_nfile;
 				m_strWordlist.RemoveAll();
@@ -762,7 +775,11 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			}
 			else
 			{
-				m_bSuccess = TRUE;
+				if (m_posBigWord != NULL)
+				{
+					m_nfile = 0;
+					PostMessage(WM_MSG_WORDLIST, NULL, NULL);
+				}
 			}
 		}
 		else
@@ -808,7 +825,7 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 		{
 			m_stSentencePath.SetWindowTextW(szPathname);
 		}
-		else if (strFilename.CompareNoCase(STR_WORD_FILE) == 0)
+		else if ((strFilename.CompareNoCase(STR_WORD_FILE) == 0) || (strFilename.CompareNoCase(_T("test.txt")) == 0))
 		{
 			m_stWordPath.SetWindowTextW(szPathname);
 		}
@@ -823,18 +840,14 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 	CDialogEx::OnDropFiles(hDropInfo);
 }
 
-void CAwordnoiserDlg::SaveTextFile(CEdit& editId)
+void CAwordnoiserDlg::SaveTextFile(CEdit& editId, CString strWord)
 {
 	CString strText = _T("");
 	CString strText2 = _T("");
 	editId.GetWindowTextW(strText);
 
 	strText2.Format(_T("%s\r\n"), strText);
-	
-	if (m_strTextPath.IsEmpty() == TRUE)
-	{
-		m_strTextPath.Format(_T("%s//%s.txt"), m_strMyDirectory, m_strMyWord);
-	}
+	m_strTextPath.Format(_T("%s//%s.txt"), m_strMyDirectory, strWord);
 
 	CFile  pf;
 	
