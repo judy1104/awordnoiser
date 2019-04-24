@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable : 4996)
 
 #define NUM_KO_CNT_SPECIALCHAR1	200
 #define NUM_KO_CNT_SPECIALCHAR2	100
@@ -19,6 +20,7 @@ private:
 	BOOL AddSpecialChar(CString strWord, CStringList& retList);
 
 	BOOL GetParsedKorean(CString strChar, CString& strParsed);
+	BOOL GetParsedKoreanToChar(CString strChar, CString& strCho, CString& strJung, CString& strJong);
 	BOOL GetParsedKorean_python(CString strChar, CString& strParsed);
 	BOOL GetSplitWord(CString strWord, CStringList& retList);
 
@@ -64,9 +66,16 @@ private:
 	};
 
 	CString hanTable[3][28] = {
-		{ _T("ぁ"),_T("あ"),_T("い"),_T("ぇ"),_T("え"),_T("ぉ"),_T("け"),_T("げ"),_T("こ"),_T("さ"),_T("ざ"),_T("し"),_T("じ"),_T("す"),_T("ず"),_T("せ"),_T("ぜ"),_T("そ"),_T("ぞ"), },
-		{ _T("た"),_T("だ"),_T("ち"),_T("ぢ"),_T("っ"),_T("つ"),_T("づ"),_T("て"),_T("で"),_T("と"),_T("ど"),_T("な"),_T("に"),_T("ぬ"),_T("ね"),_T("の"),_T("は"),_T("ば"),_T("ぱ"),_T("ひ"),_T("び"), },
-		{ _T("  "),_T("ぁ"),_T("あ"),_T("ぃ"),_T("い"),_T("ぅ"),_T("う"),_T("ぇ"),_T("ぉ"),_T("お"),_T("か"),_T("が"),_T("き"),_T("ぎ"),_T("く"),_T("ぐ"),_T("け"),_T("げ"),_T("ご"),_T("さ"),_T("ざ"),_T("し"),_T("じ"),_T("ず"),_T("せ"),_T("ぜ"),_T("そ"),_T("ぞ"), } 
+		{ _T("ぁ"),_T("あ"),_T("い"),_T("ぇ"),_T("え"),_T("ぉ"),_T("け"),_T("げ"),_T("こ"),_T("さ"),
+			_T("ざ"),_T("し"),_T("じ"),_T("す"),_T("ず"),_T("せ"),_T("ぜ"),_T("そ"),_T("ぞ"), 
+		},
+		{ _T("た"),_T("だ"),_T("ち"),_T("ぢ"),_T("っ"),_T("つ"),_T("づ"),_T("て"),_T("で"),_T("と"),
+			_T("ど"),_T("な"),_T("に"),_T("ぬ"),_T("ね"),_T("の"),_T("は"),_T("ば"),_T("ぱ"),_T("ひ"),
+			_T("び"), 
+		},
+		{ _T("  "),_T("ぁ"),_T("あ"),_T("ぃ"),_T("い"),_T("ぅ"),_T("う"),_T("ぇ"),_T("ぉ"),_T("お"),
+			_T("か"),_T("が"),_T("き"),_T("ぎ"),_T("く"),_T("ぐ"),_T("け"),_T("げ"),_T("ご"),_T("さ"),
+			_T("ざ"),_T("し"),_T("じ"),_T("ず"),_T("せ"),_T("ぜ"),_T("そ"),_T("ぞ"), } 
 	};
 	
 	CString hanTableCho[28][10] = {

@@ -5,10 +5,13 @@
 #include <cstdlib>
 #include <ctime>
 #include <set>
+#include <windows.h>
+#include <locale>
 using namespace std;
 
 CNoiseKor::CNoiseKor()
 {
+	setlocale(LC_ALL, "Korean");
 }
 
 CNoiseKor::~CNoiseKor()
@@ -186,44 +189,57 @@ BOOL CNoiseKor::GetParsedKorean_python(CString strChar, CString& strParsed)
 BOOL CNoiseKor::GetParsedKorean(CString strChar, CString& strParsed)
 {
 	BOOL bResult = TRUE;
-
-	if (strChar.GetLength() > 1)
+	if ((strChar.IsEmpty() == TRUE) || (strChar.GetLength() > 1))
 	{
 		return FALSE;
 	}
 
-	strChar = _T("보");
-
-		
-	TCHAR* szChar = (TCHAR*)(LPCTSTR)strChar;
-	//szChar = (LPTSTR)(LPCTSTR)strChar;
-	//int nAscii = __toascii(*(szChar)) - __toascii(*(_T("가")));
-	//int nAscii = __toascii(*(strChar));
-
-	int nAscii = (int)szChar - 0xAC00;
-
 	CString strCho = _T(""), strJung = _T(""), strJong = _T("");
-	int		nCho = 0, nJung = 0, nJong = 0;
-
-	nCho = nAscii / (0x0015 * 0x001C);
-	nJung = (nAscii / 0x001C) % 0x0015;
-	nJong = nAscii % 0x001C;
-
-//  	nJong = nAscii % 28;
-//  	nJung = ((nAscii - nJong) / 28) % 21;
-//  	nCho = ((nAscii - nJong) / 28 - nJung)/ 21;
 	
+	wchar_t CompleteCode = (int)strChar.GetAt(0);
+	wchar_t UniValue = CompleteCode - 0xAC00;
+
+	int nJong = UniValue % 28;
+	int nJung = ((UniValue - nJong) / 28) % 21;
+	int nCho = ((UniValue - nJong) / 28) / 21;	
+
+	if (nJong > 28 || nJung > 21 || nCho > 19)
+	{
+		return FALSE; 
+	}
+
 	strCho = hanTable[0][nCho];
 	strJung = hanTable[1][nJung];
 	strJong = hanTable[2][nJong];
 
 	strParsed.Format(_T("%s%s%s"), strCho, strJung, strJong);
+	
 	if (strParsed.IsEmpty() == FALSE)
 	{
 		bResult = TRUE;
 	}
 
 	return bResult;
+}
+
+BOOL CNoiseKor::GetParsedKoreanToChar(CString strChar, CString& strCho, CString& strJung, CString& strJong)
+{
+	BOOL bresult = FALSE;
+
+	wchar_t CompleteCode = (int)strChar.GetAt(0);
+	wchar_t UniValue = CompleteCode - 0xAC00;
+
+	int		nCho = 0, nJung = 0, nJong = 0;
+
+	nJong = UniValue % 28;
+	nJung = ((UniValue - nJong) / 28) % 21;
+	nCho = ((UniValue - nJong) / 28) / 21;
+
+	strCho = hanTable[0][nCho];
+	strJung = hanTable[1][nJung];
+	strJong = hanTable[2][nJong];
+
+	return bresult; 
 }
 
 BOOL CNoiseKor::GetSplitWord(CString strWord, CStringList& retList)
@@ -272,23 +288,11 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	if (strWord.GetLength() >= 1)
 	{
 		CString strChar1 = strWord.Mid(0, 1);
+		CString strCho = _T(""), strJung = _T(""), strJong = _T("");
 		CString strEnter1 = _T("");
 
-		TCHAR* szChar;
-		szChar = (LPTSTR)(LPCTSTR)strChar1;
-		int nAscii = __toascii(*(szChar)) - __toascii(*(_T("가")));
-
-		CString strCho = _T(""), strJung = _T(""), strJong = _T("");
-		int		nCho = 0, nJung = 0, nJong = 0;
-
-		nCho = nAscii / (21 * 28);
-		nJung = (nAscii % (21 * 28)) / 28;
-		nJong = nAscii % 28;
-
-		strCho = hanTable[0][nCho];
-		strJung = hanTable[1][nJung];
-		strJong = hanTable[2][nJong];
-
+		GetParsedKoreanToChar(strChar1, strCho, strJung, strJong);
+		
 		strEnter1.Format(_T("%s%s%s\r\n %s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
 		retList.AddTail(strEnter1);
 		m_strlLineWord1.AddTail(strEnter1);
@@ -298,23 +302,11 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	if (strWord.GetLength() >= 2)
 	{
 		CString strChar2 = strWord.Mid(1, 2);
+		CString strCho = _T(""), strJung = _T(""), strJong = _T("");
 		CString strEnter2 = _T("");
 
-		TCHAR* szChar;
-		szChar = (LPTSTR)(LPCTSTR)strChar2;
-		int nAscii = __toascii(*(szChar)) - __toascii(*(_T("가")));
-
-		CString strCho = _T(""), strJung = _T(""), strJong = _T("");
-		int		nCho = 0, nJung = 0, nJong = 0;
-
-		nCho = nAscii / (21 * 28);
-		nJung = (nAscii % (21 * 28)) / 28;
-		nJong = nAscii % 28;
-
-		strCho = hanTable[0][nCho];
-		strJung = hanTable[1][nJung];
-		strJong = hanTable[2][nJong];
-
+		GetParsedKoreanToChar(strChar2, strCho, strJung, strJong);
+				
 		strEnter2.Format(_T("%s%s%s\r\n   %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
 		retList.AddTail(strEnter2);
 		m_strlLineWord2.AddTail(strEnter2);
@@ -325,36 +317,14 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	{
 		CString strChar1 = strWord.Mid(0, 1);
 		CString strChar2 = strWord.Mid(1, 2);
-		CString strEnter = _T("");
-
-		TCHAR* szChar1;
-		TCHAR* szChar2;
-		szChar1 = (LPTSTR)(LPCTSTR)strChar1;
-		szChar2 = (LPTSTR)(LPCTSTR)strChar2;
-
-		int nAscii1 = __toascii(*(szChar1)) - __toascii(*(_T("가")));
-		int nAscii2 = __toascii(*(szChar2)) - __toascii(*(_T("가")));
 
 		CString strCho1 = _T(""), strJung1 = _T(""), strJong1 = _T("");
 		CString strCho2 = _T(""), strJung2 = _T(""), strJong2 = _T("");
-		int		nCho1 = 0, nJung1 = 0, nJong1 = 0;
-		int		nCho2 = 0, nJung2 = 0, nJong2 = 0;
 
-		nCho1 = nAscii1 / (21 * 28);
-		nJung1 = (nAscii1 % (21 * 28)) / 28;
-		nJong1 = nAscii1 % 28;
+		CString strEnter = _T("");
 
-		nCho2 = nAscii2 / (21 * 28);
-		nJung2 = (nAscii2 % (21 * 28)) / 28;
-		nJong2 = nAscii2 % 28;
-
-		strCho1 = hanTable[0][nCho1];
-		strJung1 = hanTable[1][nJung1];
-		strJong1 = hanTable[2][nJong1];		
-
-		strCho2 = hanTable[0][nCho2];
-		strJung2 = hanTable[1][nJung2];
-		strJong2 = hanTable[2][nJong2];
+		GetParsedKoreanToChar(strChar1, strCho1, strJung1, strJong1);
+		GetParsedKoreanToChar(strChar2, strCho2, strJung2, strJong2);
 				
 		strEnter.Format(_T("%s%s%s%s\r\n %s %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
 		retList.AddTail(strEnter);
