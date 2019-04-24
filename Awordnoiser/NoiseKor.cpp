@@ -41,11 +41,22 @@ BOOL CNoiseKor::GetWordList(CString strWord, CStringList& retList)
 		// 4) 단어 교체
 		if (m_strlLineWord1.IsEmpty() == FALSE)
 		{
-			GetChangeWordset(strWord, retList, 0);
+			POSITION posLine1 = m_strlLineWord1.GetHeadPosition();
+
+			while (posLine1 != m_strlLineWord1.GetTailPosition())
+			{
+				GetChangeWordset(m_strlLineWord1.GetNext(posLine1), retList, 0);
+			}
+			
 		}
 		if (m_strlLineWord2.IsEmpty() == FALSE)
 		{
-			GetChangeWordset(strWord, retList, 1);
+			POSITION posLine2 = m_strlLineWord2.GetHeadPosition();
+
+			while (posLine2 != m_strlLineWord2.GetTailPosition())
+			{
+				GetChangeWordset(m_strlLineWord2.GetNext(posLine2), retList, 1);
+			}			
 		}
 
 		nStep2 = retList.GetCount() - nStep1;
@@ -145,43 +156,6 @@ BOOL CNoiseKor::AddSpecialChar(CString strWord, CStringList& retList)
 			GetSpecialCharAdd(strWord, retList, 5);
 		}
 	}
-
-	return bResult;
-}
-
-BOOL CNoiseKor::GetParsedKorean_python(CString strChar, CString& strParsed)
-{
-	BOOL bResult = TRUE;
-
-// 	if (strChar.GetLength() > 1)
-// 	{
-// 		return FALSE;
-// 	}
-// 
-// 	setlocale(LC_ALL, "Korean");
-// 	WORD in_char, in_cho, in_jung, in_jong;
-// 	WORD result;
-// 
-// 	_tcscpy(in_char, strChar);
-// 	in_char = strChar;
-// 	printf("Input a letter : ");
-// 	wscanf(L"%c", &in_char);
-// 
-// 	// 초`중`종성 분해
-// 	in_char = in_char - 0xAC00;
-// 	//in_cho = in_char / (21 * 28);
-// 	in_cho = in_char / (0x0015 * 0x001C);
-// 	//in_jung = (in_char / 28) % 21;
-// 	in_jung = (in_char / 0x001C) % 0x0015;
-// 	//in_jong = in_char % 28;
-// 	in_jong = in_char % 0x001C;
-// 
-// 
-// 	// 초`중`종성 print
-// 	if (in_jong == 0)
-// 		wprintf(L"%c => %c + %c\n", in_char + 0xAC00, in_cho + 0x1100, in_jung + 0x1161);
-// 	else
-// 		wprintf(L"%c => %c + %c + %c\n", in_char + 0xAC00, in_cho + 0x1100, in_jung + 0x1161, in_jong + 0x11A7);
 
 	return bResult;
 }
@@ -334,59 +308,257 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	return bResult;
 }
 
+int CNoiseKor::GetKoreanCharJACode(CString strChar)
+{
+	int nCode = -1;
+
+	int nInput = __toascii(*(strChar));
+
+	int a = __toascii(*(_T("ㄱ")));//49
+	int b = __toascii(*(_T("ㅎ")));//78
+	switch (nInput)
+	{
+	case __toascii(*(_T("ㄱ"))):
+	{
+		nCode = 0;
+	}break;
+	case __toascii(*(_T("ㄲ"))):
+	{
+		nCode = 1;
+	}break;
+	case __toascii(*(_T("ㄴ"))):
+	{
+		nCode = 2;
+	}break;
+	case __toascii(*(_T("ㄷ"))):
+	{
+		nCode = 3;
+	}break;
+	case __toascii(*(_T("ㄸ"))):
+	{
+		nCode = 4;
+	}break;
+	case __toascii(*(_T("ㄹ"))):
+	{
+		nCode = 5;
+	}break;
+	case __toascii(*(_T("ㅁ"))):
+	{
+		nCode = 6;
+	}break;
+	case __toascii(*(_T("ㅂ"))):
+	{
+		nCode = 7;
+	}break;
+	case __toascii(*(_T("ㅃ"))):
+	{
+		nCode = 8;
+	}break;
+	case __toascii(*(_T("ㅅ"))):
+	{
+		nCode = 9;
+	}break;
+	case __toascii(*(_T("ㅆ"))):
+	{
+		nCode = 10;
+	}break;
+	case __toascii(*(_T("ㅇ"))):
+	{
+		nCode = 11;
+	}break;
+	case __toascii(*(_T("ㅈ"))):
+	{
+		nCode = 12;
+	}break;
+	case __toascii(*(_T("ㅉ"))):
+	{
+		nCode = 13;
+	}break;
+	case __toascii(*(_T("ㅊ"))):
+	{
+		nCode = 14;
+	}break;
+	case __toascii(*(_T("ㅋ"))):
+	{
+		nCode = 15;
+	}break;
+	case __toascii(*(_T("ㅌ"))):
+	{
+		nCode = 16;
+	}break;
+	case __toascii(*(_T("ㅍ"))):
+	{
+		nCode = 17;
+	}break;
+	case __toascii(*(_T("ㅎ"))):
+	{
+		nCode = 18;
+	}break;
+
+	default:
+		break;
+	}
+
+	return nCode;
+}
+
+int CNoiseKor::GetKoreanCharMOCode(CString strChar)
+{
+	int nCode = -1;
+
+	int nInput = __toascii(*(strChar));
+
+	int a = __toascii(*(_T("ㅏ"))); //79
+	int b = __toascii(*(_T("ㅣ"))); //99
+
+	switch (nInput)
+	{
+	case __toascii(*(_T("ㅏ"))):
+	{
+		nCode = 0;
+	}break;
+	case __toascii(*(_T("ㅐ"))):
+	{
+		nCode = 1;
+	}break;
+	case __toascii(*(_T("ㅑ"))):
+	{
+		nCode = 2;
+	}break;
+	case __toascii(*(_T("ㅒ"))):
+	{
+		nCode = 3;
+	}break;
+	case __toascii(*(_T("ㅓ"))):
+	{
+		nCode = 4;
+	}break;
+	case __toascii(*(_T("ㅔ"))):
+	{
+		nCode = 5;
+	}break;
+	case __toascii(*(_T("ㅕ"))):
+	{
+		nCode = 6;
+	}break;
+	case __toascii(*(_T("ㅖ"))):
+	{
+		nCode = 7;
+	}break;
+	case __toascii(*(_T("ㅗ"))):
+	{
+		nCode = 8;
+	}break;
+	case __toascii(*(_T("ㅘ"))):
+	{
+		nCode = 9;
+	}break;
+
+	case __toascii(*(_T("ㅙ"))):
+	{
+		nCode = 10;
+	}break;
+	case __toascii(*(_T("ㅚ"))):
+	{
+		nCode = 11;
+	}break;
+	case __toascii(*(_T("ㅛ"))):
+	{
+		nCode = 12;
+	}break;
+	case __toascii(*(_T("ㅜ"))):
+	{
+		nCode = 13;
+	}break;
+	case __toascii(*(_T("ㅝ"))):
+	{
+		nCode = 14;
+	}break;
+	case __toascii(*(_T("ㅞ"))):
+	{
+		nCode = 15;
+	}break;
+	case __toascii(*(_T("ㅟ"))):
+	{
+		nCode = 16;
+	}break;
+	case __toascii(*(_T("ㅠ"))):
+	{
+		nCode = 17;
+	}break;
+	case __toascii(*(_T("ㅡ"))):
+	{
+		nCode = 18;
+	}break;
+	case __toascii(*(_T("ㅢ"))):
+	{
+		nCode = 19;
+	}break;
+	case __toascii(*(_T("ㅣ"))):
+	{
+		nCode = 20;
+	}break;
+	default:
+		break;
+	}
+
+	return nCode;
+}
+
 BOOL CNoiseKor::GetChangeWordset(CString strWord, CStringList& retList, int nIndex)
 {
 	BOOL bResult = FALSE;
 	int nSize = strWord.GetLength();
 
-	// 1) 첫번째 글자 쪼갬
-	CString strText = strWord;
-	CString strChar1 = strText.Mid(0 + nIndex, 1 + nIndex);
-
-	TCHAR* szChar1;
-	szChar1 = (LPTSTR)(LPCTSTR)strChar1;
-
-	int nAscii1 = __toascii(*(strChar1)) - __toascii(*(_T("ㄱ")));
-
-	if (nAscii1 > 0)
+	for (int i = 0; i < nSize; ++i)
 	{
-		for (int i = 0; i < 10; ++i)
+		CString strText = strWord;
+		CString strChange = _T("");
+		CString strRet = _T("");
+		CString strChar1 = strText.Mid(0 + i, 1 + i);
+		int nCode = __toascii(*(strChar1)); 
+
+		if ((nCode >= 49) && (nCode <= 78))
 		{
-			CString strRet = _T("");
-			CString strChange = hanTableCho[nAscii1][i];
-			if (strChange.IsEmpty() == TRUE)
+			nCode = GetKoreanCharJACode(strChar1);
+			if ((nCode < 0) || (nCode > 18))
 			{
-				break;
+				continue;
 			}
-			strRet.Format(_T("%s%s"), strChange, strText.Right(strText.GetLength() - 1));
-			retList.AddTail(strRet);
+			for (int j = 0; j < 10; ++j)
+			{				
+				strChange = hanTableCho[nCode][j];
+				if (strChange.IsEmpty() == TRUE)
+				{
+					break;
+				}
+				else
+				{
+					strRet.Format(_T("%s%s%s"), strText.Left(i), strChange, strText.Right(strText.GetLength() -i -1));
+				}
+			}
+		}
+		else if ((nCode >= 79) && (nCode <= 99))
+		{
+			nCode = GetKoreanCharMOCode(strChar1);
+			if ((nCode < 0) || (nCode > 21))
+			{
+				continue;
+			}
+			for (int j = 0; j < 10; ++j)
+			{
+				strChange = hanTableMO[nCode][j];
+				if (strChange.IsEmpty() == TRUE)
+				{
+					break;
+				}
+				else
+				{
+					strRet.Format(_T("%s%s%s"), strText.Left(i), strChange, strText.Right(strText.GetLength() - i - 1));
+				}
+			}
 		}
 	}
-
-	strText = strWord;
-	CString strChar2 = strText.Mid(1 + nIndex, 2 + nIndex);
-	TCHAR* szChar2;
-	szChar2 = (LPTSTR)(LPCTSTR)strChar2;
-
-	int nAscii2 = __toascii(*(szChar2)) - __toascii(*(_T("ㅏ")));
-
-	if (nAscii2 > 0)
-	{
-		for (int i = 0; i < 10; ++i)
-		{
-			CString strRet = _T("");
-			CString strChange = hanTableJung[nAscii2][i];
-			if (strChange.IsEmpty() == TRUE)
-			{
-				break;
-			}
-			strRet.Format(_T("%s%s%s"), strText.Mid(0, 1), strChange, strText.Right(strText.GetLength() - 2));
-			retList.AddTail(strRet);
-		}
-	}
-	
-	// 3) 두 글자 모두 쪼갬
-
 
 	return bResult; 
 }
