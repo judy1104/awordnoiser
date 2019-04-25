@@ -28,6 +28,7 @@ BOOL CNoiseKor::GetWordList(CString strWord, CStringList& retList)
 	AddSpecialChar(strWord, retList);
 
 	// 2) 텍스트 분리 2-1) 철자 1개만 분리 2-2) 철자 2개 분리
+	cout << "단어 생성중...#2 SplitWord" << endl;
 	GetSplitWord(strWord, retList);
 
 	nStep1 = retList.GetCount();
@@ -36,6 +37,7 @@ BOOL CNoiseKor::GetWordList(CString strWord, CStringList& retList)
 	while (nStep2 < nStep1)
 	{
 		// 3) 종음은 아랫줄에 추가**
+		cout << "단어 생성중...#3 GetNewlineWord" << endl;
 		GetNewlineWord(strWord, retList);
 
 		// 4) 단어 교체
@@ -45,6 +47,7 @@ BOOL CNoiseKor::GetWordList(CString strWord, CStringList& retList)
 
 			while (posLine1 != m_strlLineWord1.GetTailPosition())
 			{
+				cout << "단어 생성중...#4-1 ChangeWordset" << endl;
 				GetChangeWordset(m_strlLineWord1.GetNext(posLine1), retList, 0);
 			}
 			
@@ -55,6 +58,7 @@ BOOL CNoiseKor::GetWordList(CString strWord, CStringList& retList)
 
 			while (posLine2 != m_strlLineWord2.GetTailPosition())
 			{
+				cout << "단어 생성중...#4-2 ChangeWordset" << endl;
 				GetChangeWordset(m_strlLineWord2.GetNext(posLine2), retList, 1);
 			}			
 		}
@@ -111,6 +115,7 @@ BOOL CNoiseKor::GetSpecialCharAdd(CString strWord, CStringList& retList, int nIn
 
 		strText.Insert(nIndex, strSpecial);
 		retList.AddTail(strText);
+		cout << "단어 생성중...#1 AddSpecialChar" << endl;
 	}
 
 	return bResult;
@@ -133,7 +138,11 @@ BOOL CNoiseKor::AddSpecialChar(CString strWord, CStringList& retList)
 		POSITION posRet1 = strlRet1.GetHeadPosition();
 		while (posRet1 != strlRet1.GetTailPosition())
 		{
-			GetSpecialCharAdd(strWord, retList, 3);		
+			if (retList.GetCount() > NUM_FILECOUNT / 2)
+			{
+				break;
+			}
+			GetSpecialCharAdd(strlRet1.GetNext(posRet1), retList, 3);
 		}
 	}
 
@@ -147,13 +156,21 @@ BOOL CNoiseKor::AddSpecialChar(CString strWord, CStringList& retList)
 		POSITION posRet1 = strlRet1.GetHeadPosition();
 		while (posRet1 != strlRet1.GetTailPosition())
 		{
-			GetSpecialCharAdd(strWord, strlRet2, 3);
+			if (retList.GetCount() > NUM_FILECOUNT / 2)
+			{
+				break;
+			}
+			GetSpecialCharAdd(strlRet1.GetNext(posRet1), strlRet2, 2);
 		}
 
 		POSITION posRet2 = strlRet2.GetHeadPosition();
 		while (posRet2 != strlRet2.GetTailPosition())
 		{
-			GetSpecialCharAdd(strWord, retList, 5);
+			if (retList.GetCount() > NUM_FILECOUNT / 2)
+			{
+				break;
+			}
+			GetSpecialCharAdd(strlRet2.GetNext(posRet2), retList, 3);
 		}
 	}
 
@@ -223,7 +240,7 @@ BOOL CNoiseKor::GetSplitWord(CString strWord, CStringList& retList)
 	if (strWord.GetLength() < 1)
 	{
 		return FALSE;
-	}
+	}	
 
 	// 1) 첫번째 글자 파싱
 	CString strChar1 = strWord.Mid(0, 1);
@@ -261,13 +278,34 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	// 1) 첫번째 글자 엔터
 	if (strWord.GetLength() >= 1)
 	{
+		srand((unsigned int)time(NULL));
+		int nCase = rand() % 4;
+
 		CString strChar1 = strWord.Mid(0, 1);
 		CString strCho = _T(""), strJung = _T(""), strJong = _T("");
 		CString strEnter1 = _T("");
 
 		GetParsedKoreanToChar(strChar1, strCho, strJung, strJong);
 		
-		strEnter1.Format(_T("%s%s%s\r\n %s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
+		switch (nCase)
+		{
+		case 0:
+			strEnter1.Format(_T("%s%s%s\r\n%s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
+			break;
+		case 1:
+			strEnter1.Format(_T("%s%s%s\r\n %s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
+			break;
+		case 2:
+			strEnter1.Format(_T("%s%s%s\r\n  %s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
+			break;
+		case 3:
+			strEnter1.Format(_T("%s%s%s\r\n   %s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
+			break;
+		default:
+			strEnter1.Format(_T("%s%s%s\r\n%s"), strCho, strJung, strWord.Right(strWord.GetLength() - 1), strJong);
+			break;
+		}
+
 		retList.AddTail(strEnter1);
 		m_strlLineWord1.AddTail(strEnter1);
 	}	
@@ -275,6 +313,9 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	// 2) 두번째 글자 엔터
 	if (strWord.GetLength() >= 2)
 	{
+		srand((unsigned int)time(NULL));
+		int nCase = rand() % 4;
+
 		CString strChar2 = strWord.Mid(1, 2);
 		CString strCho = _T(""), strJung = _T(""), strJong = _T("");
 		CString strEnter2 = _T("");
@@ -282,6 +323,26 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 		GetParsedKoreanToChar(strChar2, strCho, strJung, strJong);
 				
 		strEnter2.Format(_T("%s%s%s\r\n   %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
+
+		switch (nCase)
+		{
+		case 0:
+			strEnter2.Format(_T("%s%s%s\r\n  %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
+			break;
+		case 1:
+			strEnter2.Format(_T("%s%s%s\r\n   %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
+			break;
+		case 2:
+			strEnter2.Format(_T("%s%s%s\r\n    %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
+			break;
+		case 3:
+			strEnter2.Format(_T("%s%s%s\r\n     %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
+			break;
+		default:
+			strEnter2.Format(_T("%s%s%s\r\n   %s"), strWord.Left(strWord.GetLength() - 1), strCho, strJung, strJong);
+			break;
+		}
+
 		retList.AddTail(strEnter2);
 		m_strlLineWord2.AddTail(strEnter2);
 	}
@@ -289,6 +350,9 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 	// 3) 두번째 글자 엔터
 	if (strWord.GetLength() >= 2)
 	{
+		srand((unsigned int)time(NULL));
+		int nCase = rand() % 9;
+
 		CString strChar1 = strWord.Mid(0, 1);
 		CString strChar2 = strWord.Mid(1, 2);
 
@@ -300,7 +364,39 @@ BOOL CNoiseKor::GetNewlineWord(CString strWord, CStringList& retList)
 		GetParsedKoreanToChar(strChar1, strCho1, strJung1, strJong1);
 		GetParsedKoreanToChar(strChar2, strCho2, strJung2, strJong2);
 				
-		strEnter.Format(_T("%s%s%s%s\r\n %s %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+		switch (nCase)
+		{
+		case 0:
+			strEnter.Format(_T("%s%s%s%s\r\n %s %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 1:
+			strEnter.Format(_T("%s%s%s%s\r\n %s  %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 2:
+			strEnter.Format(_T("%s%s%s%s\r\n %s   %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 3:
+			strEnter.Format(_T("%s%s%s%s\r\n  %s %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 4:
+			strEnter.Format(_T("%s%s%s%s\r\n  %s  %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 5:
+			strEnter.Format(_T("%s%s%s%s\r\n  %s   %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 6:
+			strEnter.Format(_T("%s%s%s%s\r\n   %s %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 7:
+			strEnter.Format(_T("%s%s%s%s\r\n   %s  %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		case 8:
+			strEnter.Format(_T("%s%s%s%s\r\n   %s   %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		default:
+			strEnter.Format(_T("%s%s%s%s\r\n %s %s"), strCho1, strJung1, strCho2, strJung2, strJong1, strJong2);
+			break;
+		}		
 		retList.AddTail(strEnter);
 		m_strlLineWord3.AddTail(strEnter);
 	}
@@ -516,6 +612,11 @@ BOOL CNoiseKor::GetChangeWordset(CString strWord, CStringList& retList, int nInd
 		CString strChange = _T("");
 		CString strRet = _T("");
 		CString strChar1 = strText.Mid(0 + i, 1 + i);
+		if (strChar1.IsEmpty() == TRUE)
+		{
+			continue;
+		}
+
 		int nCode = __toascii(*(strChar1)); 
 
 		if ((nCode >= 49) && (nCode <= 78))
@@ -534,7 +635,16 @@ BOOL CNoiseKor::GetChangeWordset(CString strWord, CStringList& retList, int nInd
 				}
 				else
 				{
-					strRet.Format(_T("%s%s%s"), strText.Left(i), strChange, strText.Right(strText.GetLength() -i -1));
+					if (i == 0)
+					{
+						strRet.Format(_T("%s%s%s"), strText.Left(i), strChange, strText.Right(strText.GetLength() - i - 1));
+					}
+					else
+					{
+						strRet.Format(_T("%s%s%s"), strText.Left(i-1), strChange, strText.Right(strText.GetLength() - i));
+					}
+					
+					retList.AddTail(strRet);
 				}
 			}
 		}
@@ -554,7 +664,16 @@ BOOL CNoiseKor::GetChangeWordset(CString strWord, CStringList& retList, int nInd
 				}
 				else
 				{
-					strRet.Format(_T("%s%s%s"), strText.Left(i), strChange, strText.Right(strText.GetLength() - i - 1));
+					if (i == 0)
+					{
+						strRet.Format(_T("%s%s%s"), strText.Left(i), strChange, strText.Right(strText.GetLength() - i - 1));
+					}
+					else
+					{
+						strRet.Format(_T("%s%s%s"), strText.Left(i - 1), strChange, strText.Right(strText.GetLength() - i));
+					}
+					
+					retList.AddTail(strRet);
 				}
 			}
 		}
