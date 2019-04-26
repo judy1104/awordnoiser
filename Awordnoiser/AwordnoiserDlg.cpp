@@ -201,13 +201,14 @@ CString CAwordnoiserDlg::GetCurretDirectory()
 	return strPath;
 }
 
+
 void CAwordnoiserDlg::CaptureEditcontrol(int nEditId, CString strPath, CString strFolder, int nWidth /*= NUM_SIZE_WIDTH*/, int nHeight /*= NUM_SIZE_HEIGHT*/)
 {
 	if (m_checkLng.GetCheck() == TRUE)
 	{
-		nHeight = nHeight * 2;
+		nHeight = 40;
 	}
-
+	
 	CWnd*  myWnd = this->GetDlgItem(nEditId);
 	CClientDC ScreenDC(myWnd);
 	HDC h_screen_dc = ScreenDC;
@@ -260,19 +261,15 @@ void CAwordnoiserDlg::CaptureEditcontrol(int nEditId, CString strPath, CString s
 
 	if (m_nfile < m_nOldCount + 40)
 	{
-		strOcrFilename.Format(_T("%s\\%s_%d.jpg"), m_strOCRPath, strFolder, m_nfile);
+		strOcrFilename.Format(_T("%s\\%s_%d.bmp"), m_strOCRPath, strFolder, m_nfile);
 
-		int length = strOcrFilename.GetLength();
-		char* st = new char[length];
-		strcpy(st, (CT2A)strOcrFilename);
-
-		FILE *p_file = fopen(st, "wb");
-		if (p_file != NULL)
+		CFile file;
+		if (file.Open(strOcrFilename, CFile::modeCreate | CFile::modeWrite) == TRUE)
 		{
-			fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);
-			fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);
-			fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
-			fclose(p_file);
+			file.Write(&dib_format_layout, sizeof(BITMAPFILEHEADER));
+			file.Write(&dib_define, sizeof(BITMAPINFOHEADER));
+			file.Write(p_image_data, dib_define.bmiHeader.biSizeImage);
+			file.Close();
 		}
 	}
 
@@ -289,20 +286,20 @@ void CAwordnoiserDlg::CaptureEditcontrol(int nEditId, CString strPath, CString s
 		strFilename.Format(_T("%s\\%s_%d.jpg"), m_strTrainPath, strFolder, m_nfile);
 	}
 	
+	int a = strFilename.GetAllocLength();
 	int length = strFilename.GetLength();
-	char* st = new char[length];
-	strcpy(st, (CT2A)strFilename);
-
-	FILE *p_file = fopen(st, "wb");
-	if (p_file != NULL) 
+	char szTest[MAX_PATH] = { 0, };
+	strcpy(szTest, CT2A(strFilename));
+	CFile file;
+	if (file.Open(strFilename, CFile::modeCreate | CFile::modeWrite) == TRUE)
 	{
-		fwrite(&dib_format_layout, 1, sizeof(BITMAPFILEHEADER), p_file);
-		fwrite(&dib_define, 1, sizeof(BITMAPINFOHEADER), p_file);
-		fwrite(p_image_data, 1, dib_define.bmiHeader.biSizeImage, p_file);
-		fclose(p_file);
+		file.Write(&dib_format_layout, sizeof(BITMAPFILEHEADER));
+		file.Write(&dib_define, sizeof(BITMAPINFOHEADER));
+		file.Write(p_image_data, dib_define.bmiHeader.biSizeImage);
+		file.Close();
 		++m_nfile;
 	}
-
+	
 	// 사용했던 비트맵과 DC 를 해제한다.
 	if (NULL != h_bitmap) DeleteObject(h_bitmap);
 	if (NULL != h_screen_dc) ::ReleaseDC(NULL, h_screen_dc);
@@ -758,7 +755,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 
 			if (m_checkLng.GetCheck() == TRUE)
 			{
-				if (m_nfile < 300)
+				if (m_nfile < 500)
 				{
 					m_nOldCount = m_nfile;
 					m_strWordlist.RemoveAll();
