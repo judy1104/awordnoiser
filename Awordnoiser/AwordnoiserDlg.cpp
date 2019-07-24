@@ -77,6 +77,7 @@ void CAwordnoiserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ST_INDEX2, m_stIndex2);
 	DDX_Control(pDX, IDC_EDIT3, m_edit3);
 	DDX_Control(pDX, IDC_CHECK_LANG, m_checkLng);
+	DDX_Control(pDX, IDC_STATIC_WORDS, m_stWordsPath);
 }
 
 BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
@@ -90,6 +91,7 @@ BEGIN_MESSAGE_MAP(CAwordnoiserDlg, CDialogEx)
 	ON_WM_DROPFILES()
 	ON_MESSAGE(WM_MSG_WORDLIST, OnMakeBadWords)
 	
+	ON_BN_CLICKED(IDC_BUTTON4, &CAwordnoiserDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()
 
 
@@ -755,7 +757,7 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 
 			if (m_checkLng.GetCheck() == TRUE)
 			{
-				if (m_nfile < 500)
+				if (m_nfile < MIN_FILE_COUNT)
 				{
 					m_nOldCount = m_nfile;
 					m_strWordlist.RemoveAll();
@@ -809,6 +811,21 @@ void CAwordnoiserDlg::OnTimer(UINT_PTR nIDEvent)
 			m_nTimerSentence = SetTimer(3, 100, 0);
 		}
 	}
+	else if (nIDEvent == 4)
+	{
+		KillTimer(m_nTimerWord4);
+		SetEditcontrolText(m_editWord2, m_strlnormal.GetNext(m_posWord4));
+		CaptureEditcontrol(IDC_EDIT2, m_strMyDirectory, m_strMyWord);
+
+		if (m_posWord4 == m_strlnormal.GetTailPosition())
+		{
+			// 종료
+		}
+		else
+		{
+			SetTimer(4, 100, 0);
+		}
+	}
 
 	CDialogEx::OnTimer(nIDEvent);
 }
@@ -846,6 +863,12 @@ void CAwordnoiserDlg::OnDropFiles(HDROP hDropInfo)
 			{
 				m_checkLng.SetCheck(TRUE);
 			}
+		}
+		else if (
+			(strFilename.CompareNoCase(STR_WORD_KOR) == 0) || 
+			(strFilename.CompareNoCase(STR_WORD_ENG) == 0))
+		{
+			m_stWordsPath.SetWindowTextW(szPathname);
 		}
 		else
 		{
@@ -932,6 +955,7 @@ void CAwordnoiserDlg::OnBnClickedButton3()
 				strText.TrimLeft(_T(" "));
 				m_strlSentence.AddTail(strText);
 			}
+			cfile.Close();
 		}
 	}
 
@@ -952,4 +976,73 @@ void CAwordnoiserDlg::OnBnClickedButton3()
 	// 원본 캡처 후 저장, 그리고
 	// 형용사를 변형된 욕설로 교체
 	// 변형 문장 캡처 후 저장. 
+}
+
+void CAwordnoiserDlg::OnBnClickedButton4()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString strFile = _T("");
+	m_stWordsPath.GetWindowTextW(strFile);
+
+	if (_taccess(strFile, 0) != -1)
+	{
+		if (strFile.Find(_T("kor")) != -1)
+		{
+			m_strMyWord = _T("korean12");
+		}
+		else if (strFile.Find(_T("eng")) != -1)
+		{
+			m_strMyWord = _T("english17");
+		}
+
+		if (CheckDirectory(m_strMyDirectory, _T("ocr"), m_strMyWord, m_strOCRPath) == FALSE)
+		{
+			AfxMessageBox(_T("CheckDirectory ocr error"));
+		}
+
+		if (CheckDirectory(m_strMyDirectory, _T("train"), m_strMyWord, m_strTrainPath) == FALSE)
+
+		{
+			AfxMessageBox(_T("CheckDirectory train error"));	
+		}
+
+		if (CheckDirectory(m_strMyDirectory, _T("test"), m_strMyWord, m_strTestPath) == FALSE)
+		{
+			AfxMessageBox(_T("CheckDirectory test error"));
+		}
+
+		if (CheckDirectory(m_strMyDirectory, _T("validation"), m_strMyWord, m_strValidationPath) == FALSE)
+		{
+			AfxMessageBox(_T("CheckDirectory validation error"));
+		}
+
+		CFile cfile;
+		if (cfile.Open(strFile, CFile::modeRead | CFile::shareDenyNone) == TRUE)
+		{
+			TCHAR pbufRead[102400] = { 0, };
+			cfile.Read(pbufRead, sizeof(pbufRead));
+
+			CString strReadMsg = _T("");
+			strReadMsg = pbufRead;
+			strReadMsg.Replace(_T("\r\n"), _T(""));
+
+			int nCntWord = GetFindCharCount(strReadMsg, '|');
+			
+			for (int i = 0; i <= nCntWord; ++i)
+			{
+				CString strText = _T("");
+				AfxExtractSubString(strText, strReadMsg, i, '|');
+				//m_setWords.insert(strText);
+				m_strlnormal.AddTail(strText);
+			}
+			cfile.Close();
+		}
+
+		m_posWord4 = m_strlnormal.GetHeadPosition();
+		SetTimer(4, 100, 0);
+	}
+	else
+	{
+		AfxMessageBox(_T("no file"));
+	}
 }

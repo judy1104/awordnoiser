@@ -6,6 +6,7 @@
 #include "afxwin.h"
 #include "afxcmn.h"
 
+using namespace std;
 
 // CAwordnoiserDlg 대화 상자
 class CAwordnoiserDlg : public CDialogEx
@@ -29,6 +30,7 @@ private:
 	int		m_nTimerWord;
 	int		m_nTimerWord2;
 	int		m_nTimerSentence; 
+	int		m_nTimerWord4;
 
 	BOOL	m_bDoing = FALSE; 
 	BOOL	m_bSuccess = FALSE; 
@@ -48,11 +50,15 @@ private:
 	CStringList m_strBigWordlist; 
 	CStringList m_strBowlist; 
 	CStringList m_strlSentence; 
+	CStringList m_strlnormal;
+	set<CString> m_setWords;
+	//set<CString> m_setWords; 
 
 	POSITION m_posWord; 
 	POSITION m_posBigWord;
 	POSITION m_posBowset;
 	POSITION m_posSentence;
+	POSITION m_posWord4;
 
 private:
 	CString GetCurretDirectory();
@@ -90,6 +96,7 @@ private:
 	CStatic m_stIndex2;
 	CStatic m_stWordPath;
 	CStatic m_stSentencePath;
+	CStatic m_stWordsPath;
 	CProgressCtrl m_progress;
 	CProgressCtrl m_progress2;
 	CProgressCtrl m_progress3;
@@ -104,4 +111,7 @@ private:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);	
 	afx_msg void OnDropFiles(HDROP hDropInfo);	
 
+public:
+	afx_msg void OnBnClickedButton4();
+	
 };

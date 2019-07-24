@@ -34,6 +34,10 @@
 
 #include <afxcontrolbars.h>     // MFC의 리본 및 컨트롤 막대 지원
 
+
+#include <iostream>
+#include <set>
+
 #define WM_MSG_WORDLIST				(WM_USER+100)
 
 #define TYPE_DATA_TRAIN				0
@@ -50,6 +54,9 @@
 #define STR_WORD_FILE				_T("wordnoiser.txt")
 #define STR_WORD_FILE_KOR			_T("wordnoiser_kor.txt")
 #define STR_WORDSET_FOLDER			_T("wordset")
+
+#define STR_WORD_KOR				_T("kor-word.txt")
+#define STR_WORD_ENG				_T("eng-word.txt")
 
 
 #ifdef _UNICODE
